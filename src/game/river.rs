@@ -271,7 +271,9 @@ fn carve_island(water: &mut Water, center: f32, width: f32, min_passage: f32) {
         return;
     }
     let half = width * 0.5;
-    let center = center.clamp(l + min_passage + half, r - min_passage - half);
+    let lo = l + min_passage + half;
+    let hi = r - min_passage - half;
+    let center = center.min(hi).max(lo);
     water[i] = (l, center - half);
     water.insert(i + 1, (center + half, r));
 }
