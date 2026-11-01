@@ -1,5 +1,5 @@
 [package]
-name = "crowraid"
+name = "bevy_jam_8"
 authors = ["batblerone <clouthier+github@proton.me>"]
 version = "0.1.0"
 edition = "2024"
