@@ -26,31 +26,12 @@ pub(super) fn plugin(app: &mut App) {
     app.add_message::<BossDefeated>();
 
     app.add_systems(OnEnter(Screen::Gameplay), start_run.in_set(RunSetup));
-    app.add_systems(OnEnter(GamePhase::Respawning), |mut c: Commands| {
+    app.add_systems(OnEnter(GamePhase::Nighttime), |mut c: Commands| {
         c.insert_resource(PhaseTimer(Timer::from_seconds(
             RESPAWN_DELAY,
             TimerMode::Once,
         )));
     });
-    app.add_systems(OnEnter(GamePhase::LevelClear), |mut c: Commands| {
-        c.insert_resource(PhaseTimer(Timer::from_seconds(
-            LEVEL_CLEAR_DELAY,
-            TimerMode::Once,
-        )));
-    });
-
-    app.add_systems(
-        Update,
-        (
-            // Death first, boss second: if both happen in one frame
-            // the level still clears
-            (on_player_died, on_boss_defeated).chain(),
-            finish_respawn.run_if(in_state(GamePhase::Respawning)),
-            finish_level_clear.run_if(in_state(GamePhase::LevelClear)),
-        )
-            .run_if(in_state(Screen::Gameplay))
-            .in_set(PausableSystems),
-    );
 }
 
 // ------ State Data for managing game flow ------
@@ -60,11 +41,7 @@ pub(super) fn plugin(app: &mut App) {
 #[source(Screen = Screen::Gameplay)]
 pub enum GamePhase {
     #[default]
-    Playing,
-    /// The crow died, but has lives left
-    Respawning,
-    /// The boss fell, banner, checkpoint, then save and on to next level.
-    LevelClear,
+    Nighttime,
     /// No lives left, run over
     GameOver,
 }
@@ -174,65 +151,4 @@ fn start_run(
             seed.0 = cp.seed;
         }
     }
-}
-
-fn on_player_died(
-    mut died: MessageReader<PlayerDied>,
-    mut lives: ResMut<Lives>,
-    mut next: ResMut<NextState<GamePhase>>,
-) {
-    for _ in died.read() {
-        lives.0 = lives.0.saturating_sub(1);
-        next.set(if lives.0 == 0 {
-            GamePhase::GameOver
-        } else {
-            GamePhase::Respawning
-        });
-    }
-}
-
-fn on_boss_defeated(
-    mut defeated: MessageReader<BossDefeated>,
-    lives: Res<Lives>,
-    mut next: ResMut<NextState<GamePhase>>,
-) {
-    if defeated.read().last().is_some() && lives.0 > 0 {
-        next.set(GamePhase::LevelClear);
-    }
-}
-
-fn finish_respawn(
-    mut commands: Commands,
-    time: Res<Time>,
-    mut timer: ResMut<PhaseTimer>,
-    assets: Res<PlayerAssets>,
-    selected: Res<SelectedPlayer>,
-    mut next: ResMut<NextState<GamePhase>>,
-) {
-    if timer.0.tick(time.delta()).just_finished() {
-        commands.spawn_scene(player(selected.0, &assets));
-        next.set(GamePhase::Playing);
-    }
-}
-
-fn finish_level_clear(
-    mut commands: Commands,
-    time: Res<Time>,
-    mut timer: ResMut<PhaseTimer>,
-    score: Res<Score>,
-    mut progress: ResMut<LevelProgress>,
-    players: Query<(), With<Player>>,
-    assets: Res<PlayerAssets>,
-    selected: Res<SelectedPlayer>,
-    mut next: ResMut<NextState<GamePhase>>,
-) {
-    if !timer.0.tick(time.delta()).just_finished() {
-        return;
-    }
-    progress.advance(score.current);
-    // The crow may have died in same frame as boss
-    if players.is_empty() {
-        commands.spawn_scene(player(selected.0, &assets));
-    }
-    next.set(GamePhase::Playing);
 }

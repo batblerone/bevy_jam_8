@@ -6,10 +6,8 @@ use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use crate::{
     AppSystems,
     game::{
-        boss::Boss,
         level::*,
         physics::*,
-        pickup::Pickup,
         player::*,
         score::{EnemyDefeated, PointValue},
     },
@@ -272,10 +270,7 @@ fn push_direction(
 /// Spawns a background + foreground healthbar pair for each entity that gains Health.
 pub fn spawn_healthbars(
     mut commands: Commands,
-    new_health: Query<
-        (Entity, &GlobalTransform, &Health),
-        (Without<Pickup>, Without<Boss>, Added<Health>),
-    >,
+    new_health: Query<(Entity, &GlobalTransform, &Health), Added<Health>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {

@@ -1,8 +1,7 @@
-//! Level progression: watches the score and decides when a boss should appear.
-//!
-//! The boss doesn't exist yet, for now this module only keeps the accounting and
-//! sends the appropriate [`BossThresholdReached`] message once per level. A boss
-//! spawner can be dropped in later without touching any of the score code.
+//! The progression module tracks how well the player is doing throughout the game.
+//! 
+//! A score track will be present for the 8 days a player looks after the shop.
+//! What this actually means, I have no idea.
 
 use bevy::prelude::*;
 
@@ -26,7 +25,7 @@ pub(super) fn plugin(app: &mut App) {
         Update,
         check_boss_threshold
             .run_if(resource_changed::<Score>)
-            .run_if(in_state(GamePhase::Playing))
+            .run_if(in_state(GamePhase::Nighttime))
             // Look at score after this frames kills have been processed
             .after(add_points_for_kills)
             .run_if(in_state(Screen::Gameplay)),

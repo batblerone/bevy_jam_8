@@ -1,11 +1,8 @@
-//! Score: the points the player earns by defeating enemies, and the HUD
-//! readout in the top-left corner that shows them.
+//! The score module tracks how well the player is doing.
 //!
-//! Points only ever enter the score through [`EnemyDefeated`] messages, and
-//! the only thing that sends one is `handle_deaths` (in `screens/gameplay.rs`)
-//! when something carrying a [`PointValue`] is killed. Enemies that fly off
-//! the bottom of the screen are despawned without ever being marked `IsDead`,
-//! so they never award anything.
+//! Score is tracked by successfully delivering potions to customers.
+//! This will probably be some sort of [`PotionDelivered`] message
+//! sent out by a potion tracking system. This remains to be seen.
 
 use bevy::prelude::*;
 

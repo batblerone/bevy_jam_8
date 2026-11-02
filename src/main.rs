@@ -16,7 +16,7 @@ mod theme;
 
 use crate::game_manager::*;
 use avian2d::prelude::*;
-use bevy::{asset::AssetMetaCheck, prelude::*};
+use bevy::{asset::AssetMetaCheck, camera::ScalingMode, prelude::*};
 
 fn main() -> AppExit {
     App::new().add_plugins(AppPlugin).run()
@@ -38,7 +38,7 @@ impl Plugin for AppPlugin {
                 })
                 .set(WindowPlugin {
                     primary_window: Window {
-                        title: "Crowraid".to_string(),
+                        title: "bevy_jam_8".to_string(),
                         fit_canvas_to_parent: true,
                         ..default()
                     }
@@ -82,7 +82,7 @@ impl Plugin for AppPlugin {
         app.configure_sets(Update, PausableSystems.run_if(in_state(Pause(false))));
 
         // Spawn the main camera.
-        app.add_systems(Startup, spawn_camera);
+        app.add_systems(Startup, init_camera);
     }
 }
 
@@ -105,6 +105,19 @@ enum AppSystems {
     ResolveDeaths,
 }
 
-fn spawn_camera(mut commands: Commands) {
-    commands.spawn((Name::new("Camera"), Camera2d));
+// This marks our main camrea
+#[derive(Component)]
+#[require(Camera2d)]
+pub struct MainCamera;
+
+fn init_camera(mut commands: Commands) {
+    commands.spawn((
+        Name::new("Camera"),
+        MainCamera,
+        Projection::Orthographic(OrthographicProjection {
+            scaling_mode: ScalingMode::WindowSize,
+            scale: 0.01, // jscales one world unit to 100 window pixels
+            ..OrthographicProjection::default_2d()
+        }),
+    ));
 }

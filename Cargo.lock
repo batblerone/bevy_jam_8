@@ -919,6 +919,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_enhanced_input"
+version = "0.27.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fb91b77a99df5f292eb9bb5e2f7357bbb17caa705c36870e3e9e298096a3b488"
+dependencies = [
+ "bevy",
+ "bevy_enhanced_input_macros",
+ "bitflags 2.13.0",
+ "smallvec",
+ "variadics_please",
+]
+
+[[package]]
+name = "bevy_enhanced_input_macros"
+version = "0.27.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b328604b1e3330b1798d82eeeabfefdf490c2c78d53ffc5d0961fd147b953126"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 3.0.9",
+]
+
+[[package]]
 name = "bevy_extract"
 version = "0.20.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1203,6 +1227,7 @@ version = "0.1.0"
 dependencies = [
  "avian2d",
  "bevy",
+ "bevy_enhanced_input",
  "directories",
  "fastrand",
  "getrandom 0.3.4",

@@ -19,7 +19,6 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(Startup, load_save);
     app.add_systems(OnExit(Menu::Settings), request_save);
     // OnExit, not OnEnter: advance() has run, so this is the level you resume at.
-    app.add_systems(OnExit(GamePhase::LevelClear), record_checkpoint);
     app.add_systems(OnEnter(GamePhase::GameOver), record_game_over);
     app.add_systems(Last, write_save);
 }
@@ -170,7 +169,7 @@ mod backend {
     use std::{fs, io, path::PathBuf};
 
     fn path(key: &str) -> Option<PathBuf> {
-        let dirs = directories::ProjectDirs::from("com", "batblerone", "Crowraid")?;
+        let dirs = directories::ProjectDirs::from("com", "batblerone", "bevy_jam_8")?;
         Some(dirs.data_dir().join(format!("{key}.json")))
     }
 
@@ -200,13 +199,13 @@ mod backend {
     }
 
     pub fn read(key: &str) -> Option<String> {
-        storage()?.get_item(&format!("crowraid_{key}")).ok()?
+        storage()?.get_item(&format!("bevy_jam_8_{key}")).ok()?
     }
 
     pub fn write(key: &str, contents: &str) -> io::Result<()> {
         storage()
             .ok_or_else(|| io::Error::other("localStorage unavailable"))?
-            .set_item(&format!("crowraid_{key}"), contents)
+            .set_item(&format!("bevy_jam_8_{key}"), contents)
             .map_err(|_| io::Error::other("localStorage write failed"))
     }
 }

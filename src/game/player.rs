@@ -15,13 +15,7 @@ use bevy::{
 use crate::{
     AppSystems, PausableSystems,
     asset_tracking::LoadResource,
-    game::{
-        animation::PlayerAnimation,
-        energy::*,
-        movement::{MovementController, ScreenWrap},
-        physics::*,
-        projectile::*,
-    },
+    game::{animation::PlayerAnimation, movement::MovementController, physics::*},
     game_manager::Screen,
     screens::gameplay::Health,
 };
@@ -37,13 +31,13 @@ pub(super) fn plugin(app: &mut App) {
             .in_set(AppSystems::RecordInput)
             .in_set(PausableSystems),
     );
-    
+
     app.add_systems(
         Update,
         (grant_invincibility, tick_invincibility)
             .chain()
             .in_set(AppSystems::TickTimers)
-            .in_set(PausableSystems)
+            .in_set(PausableSystems),
     );
 }
 
@@ -75,7 +69,7 @@ pub fn tick_invincibility(
         shield.0.tick(time.delta());
         // Blink ten times a second
         let bright = (shield.0.elapsed_secs() * 10.0) as u32 % 2 == 0;
-        
+
         sprite.color.set_alpha(if bright { 1.0 } else { 0.3 });
         if shield.0.is_finished() {
             sprite.color.set_alpha(1.0);
@@ -89,9 +83,8 @@ pub struct PlayerStats {
     pub health: f32,
     pub speed: f32,
     pub scale: f32,
+    pub color: Color,
     pub collider_rad: f32,
-    pub energy: f32,
-    pub energy_drain: f32,
 }
 
 /// Where character sprite info is stored
@@ -109,7 +102,7 @@ pub struct PlayerSpriteSheet {
 #[reflect(Component)]
 pub enum PlayerKind {
     #[default]
-    OrdinaryCrow,
+    OrdinaryWitch,
 }
 
 /// Which character the next run spawns, useful for a character select screen.
@@ -118,11 +111,11 @@ pub struct SelectedPlayer(pub PlayerKind);
 
 impl PlayerKind {
     /// For every kind, in the same order as the enum. Asset loading walks this list.
-    pub const ALL: [PlayerKind; 1] = [PlayerKind::OrdinaryCrow];
+    pub const ALL: [PlayerKind; 1] = [PlayerKind::OrdinaryWitch];
 
     pub fn player_sheet(self) -> PlayerSpriteSheet {
         match self {
-            PlayerKind::OrdinaryCrow => PlayerSpriteSheet {
+            PlayerKind::OrdinaryWitch => PlayerSpriteSheet {
                 path: "images/crow_animated.png",
                 frame_size: UVec2::new(ATLAS_HEIGHT, ATLAS_WIDTH),
                 columns: 1,
@@ -134,13 +127,12 @@ impl PlayerKind {
 
     pub fn player_stats(self) -> PlayerStats {
         match self {
-            PlayerKind::OrdinaryCrow => PlayerStats {
+            PlayerKind::OrdinaryWitch => PlayerStats {
                 health: 100.0,
                 speed: 400.0,
-                scale: 1.0,
-                collider_rad: 24.0,
-                energy: 100.0,
-                energy_drain: 2.5,
+                scale: 0.5,
+                color: Color::srgb(1.0, 0.5, 0.5),
+                collider_rad: 1.0,
             },
         }
     }
@@ -155,7 +147,6 @@ impl PlayerKind {
 pub fn player_base_scene(kind: PlayerKind) -> impl Scene {
     let stats = kind.player_stats();
     let health = Health::new(stats.health);
-    let energy = Energy::new(stats.energy, stats.energy_drain);
     let controller = MovementController {
         max_speed: stats.speed,
         ..default()
@@ -169,9 +160,7 @@ pub fn player_base_scene(kind: PlayerKind) -> impl Scene {
         Player
         kind
         health
-        energy
         controller
-        ScreenWrap
         RigidBody::Dynamic
         collider
         LockedAxes::ROTATION_LOCKED
@@ -187,9 +176,10 @@ pub fn player(kind: PlayerKind, assets: &PlayerAssets) -> impl Scene {
     let animation = PlayerAnimation::new();
     let sheet = assets.sheet(kind);
     let layout = assets.layout(kind);
+    let mesh = assets.mesh(kind);
+    let material = assets.material(kind);
     let index = animation.get_atlas_index();
     let transform = Transform::from_scale(Vec3::splat(kind.player_stats().scale));
-    let gun = Gun::player();
     bsn! {
         @player_base_scene(kind)
         // Sprite is it's own thing in bsn!. So using the sprite function of bsn
@@ -200,18 +190,19 @@ pub fn player(kind: PlayerKind, assets: &PlayerAssets) -> impl Scene {
         // we want to pass off into our bsn! call. To do this we have to use the template
         // where then we have to `.into()` our layout to get the `HandleTemplate` needed for
         // `TextureAtlasTemplate`.
-        Sprite {
-            image: sheet,
-            texture_atlas: {
-                Some(TextureAtlasTemplate{
-                    layout: layout.into(),
-                    index: index
-                })
-            }
-        }
+        // Sprite {
+        //     image: sheet,
+        //     texture_atlas: {
+        //         Some(TextureAtlasTemplate{
+        //             layout: layout.into(),
+        //             index: index
+        //         })
+        //     }
+        // }
+        Mesh2d(mesh)
+        MeshMaterial2d::<ColorMaterial>(material)
         transform
         animation
-        gun
     }
 }
 
@@ -258,6 +249,9 @@ pub struct PlayerAssets {
     /// The steps used in animation, this is legacy from bevy_template_2d, but may find use elsewhere.
     #[dependency]
     pub steps: Vec<Handle<AudioSource>>,
+    /// For debug and primitives construction
+    pub debug_mesh: Vec<Handle<Mesh>>,
+    pub debug_material: Vec<Handle<ColorMaterial>>,
 }
 
 impl PlayerAssets {
@@ -267,6 +261,14 @@ impl PlayerAssets {
 
     pub fn layout(&self, kind: PlayerKind) -> Handle<TextureAtlasLayout> {
         self.layouts[kind.index()].clone()
+    }
+
+    pub fn mesh(&self, kind: PlayerKind) -> Handle<Mesh> {
+        self.debug_mesh[kind.index()].clone()
+    }
+
+    pub fn material(&self, kind: PlayerKind) -> Handle<ColorMaterial> {
+        self.debug_material[kind.index()].clone()
     }
 }
 
@@ -301,6 +303,22 @@ impl FromWorld for PlayerAssets {
                 .collect()
         };
 
+        let debug_mesh = {
+            let mut meshes = world.resource_mut::<Assets<Mesh>>();
+            PlayerKind::ALL
+                .iter()
+                .map(|kind| meshes.add(Circle::new(kind.player_stats().collider_rad)))
+                .collect()
+        };
+
+        let debug_material = {
+            let mut materials = world.resource_mut::<Assets<ColorMaterial>>();
+            PlayerKind::ALL
+                .iter()
+                .map(|kind| materials.add(ColorMaterial::from_color(kind.player_stats().color)))
+                .collect()
+        };
+
         let assets = world.resource::<AssetServer>();
 
         let sheets = PlayerKind::ALL
@@ -325,6 +343,8 @@ impl FromWorld for PlayerAssets {
                 assets.load("audio/sound_effects/step3.ogg"),
                 assets.load("audio/sound_effects/step4.ogg"),
             ],
+            debug_mesh,
+            debug_material,
         }
     }
 }
