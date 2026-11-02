@@ -3,11 +3,24 @@
 Run an alchemy potion shop and craft potions for you customers. You are playing as a young witch/wizard who is looking after the shop for you old wizened grandpa while they are at wizardcon. Customers will enter the shop and pseudo-randomly give an order for a potion to be brewed.
 
 Art Style:
-- [] Meme art style 2010's (Thick lines, sparse detail, cute and unhinged)
-- [] Top down 2D view
-- [] Map with multiple layers in Z direction
+- Meme art style 2010's (Thick lines, sparse detail, cute and unhinged)
+- Top down 2D view
+- Map with multiple layers in Z direction
 
-Game Mechanics:
+Art TODO:
+- [] Ingredient Book & Book UI
+- [] Ingredient Sprites
+- [] Customer Demand Sprites
+- [] Customers
+- [] Potion Shop
+- [] Cauldron
+- [] Drying Racks
+- [] Mortar & Pestle
+- [] Flasks
+- [] Grow Beds
+- [] Plant Sprites
+
+Game Mechanics TODO:
 - [] Each customer presents a desired potion using iconography
 - [] Each potion is made in a cauldron
 - [] Each potion is made up of up to 4 ingredients
