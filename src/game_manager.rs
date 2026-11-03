@@ -161,6 +161,7 @@ fn start_run(
     mut progress: ResMut<LevelProgress>,
     mut seed: ResMut<RunSeed>,
     mut run_cycle: ResMut<RunCycle>,
+    current_phase: Res<State<GamePhase>>,
     mut next_phase: ResMut<NextState<GamePhase>>,
 ) {
     println!("\n\n ----- [RUN INITIALIZATION] ----- \n\n");
@@ -183,7 +184,7 @@ fn start_run(
 
 
     // Force the game phase machine to switch directly to Day
-    next_phase.set(GamePhase::Day);
+    change_phase(*current_phase.get(), GamePhase::Day, &mut next_phase);
     // Reset the run cycle counter to Day 0
     run_cycle.current_day = 0;
 }
@@ -191,6 +192,7 @@ fn start_run(
 fn tick_night_clock(
     time: Res<Time>,
     mut night_ticker: ResMut<NightTicker>,
+    current_phase: Res<State<GamePhase>>,
     mut next_state: ResMut<NextState<GamePhase>>,
     mut messages: MessageWriter<NightTickEvent>, 
 ) {
@@ -207,7 +209,7 @@ fn tick_night_clock(
         println!("Moon go sleep now! To dawn with thee...");
         
         // Switch the game phase to Dawn
-        next_state.set(GamePhase::Dawn);
+        change_phase(*current_phase.get(), GamePhase::Dawn, &mut next_state);
     }
 }
 
@@ -228,7 +230,7 @@ fn start_night_phase(mut night_ticker: ResMut<NightTicker>) {
 /// A debug system to manually push the game from Day to Night for testing purposes
 fn test_advance_phase(
     keyboard_input: Res<ButtonInput<KeyCode>>, // Reads keyboard state
-    current_state: Res<State<GamePhase>>,
+    current_phase: Res<State<GamePhase>>,
     mut next_state: ResMut<NextState<GamePhase>>,
 ) {
     let shift_held = keyboard_input.pressed(KeyCode::ShiftLeft) 
@@ -238,7 +240,8 @@ fn test_advance_phase(
 
     if shift_held && f1_pressed {
         // Determine the next state based on the current state
-        let target_phase = match current_state.get() {
+        let target_phase = match current_phase.get() {
+            GamePhase::Initial => Some(GamePhase::Day),
             GamePhase::Day => Some(GamePhase::Dusk),
             GamePhase::Dusk => Some(GamePhase::Night),
             GamePhase::Night => Some(GamePhase::Dawn),
@@ -246,10 +249,18 @@ fn test_advance_phase(
             _ => None, // Do nothing for Victory or GameOver
         };
 
-        // If a valid transition exists, execute it and print dynamically
         if let Some(next) = target_phase {
-            next_state.set(next);
-            println!("[DEBUG] Advancing phase: {:?} -> {:?}", current_state.get(), next);
+            // Call the helper here!
+            change_phase(*current_phase.get(), next, &mut next_state);
         }
     }
+}
+
+pub fn change_phase(
+    current: GamePhase,
+    next: GamePhase,
+    next_state: &mut ResMut<NextState<GamePhase>>,
+) {
+    next_state.set(next);
+    println!("[PHASE TRANSITION] {:?} -> {:?}", current, next);
 }
