@@ -6,8 +6,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     audio::AudioSettings,
-    game::{progression::LevelProgress, score::Score},
-    game_manager::{Checkpoint, GamePhase, Lives, Menu, RunSeed},
+    game::score::Score,
+    game_manager::{Checkpoint, GamePhase, Menu},
 };
 
 const SAVE_VERSION: u32 = 1;
@@ -110,28 +110,6 @@ fn request_save(mut save: MessageWriter<SaveRequest>) {
     save.write(SaveRequest);
 }
 
-fn record_checkpoint(
-    mut data: ResMut<SaveData>,
-    progress: Res<LevelProgress>,
-    score: Res<Score>,
-    lives: Res<Lives>,
-    seed: Res<RunSeed>,
-    mut save: MessageWriter<SaveRequest>,
-) {
-    // OnExit(LevelClear) also runs when quitting to the title mid-banner, before
-    // `advance()`. The boss flag is only cleared by `advance()`, so skip that case.
-    if progress.boss_active {
-        return;
-    }
-    data.checkpoint = Some(Checkpoint {
-        level: progress.level,
-        score: score.current,
-        lives: lives.0,
-        seed: seed.0,
-    });
-    data.highest_level = data.highest_level.max(progress.level);
-    save.write(SaveRequest);
-}
 
 fn record_game_over(mut data: ResMut<SaveData>, mut save: MessageWriter<SaveRequest>) {
     // Arcade rules: a finished run can't be continued.

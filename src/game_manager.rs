@@ -8,9 +8,7 @@ use serde::{Deserialize, Serialize};
 use crate::game::{player::*, progression::*, score::*};
 
 pub const STARTING_LIVES: u32 = 3;
-pub const MAX_LIVES: u32 = 5;
 pub const RESPAWN_DELAY: f32 = 1.5;
-pub const LEVEL_CLEAR_DELAY: f32 = 3.0;
 
 pub(super) fn plugin(app: &mut App) {
     // All states live within this plugin, it manages game flow
@@ -24,7 +22,6 @@ pub(super) fn plugin(app: &mut App) {
     app.init_resource::<RunStart>();
     app.init_resource::<RunSeed>();
     app.add_message::<PlayerDied>();
-    app.add_message::<BossDefeated>();
 
     app.add_systems(OnEnter(Screen::Gameplay), start_run.in_set(RunSetup));
     app.add_systems(OnEnter(GamePhase::Nighttime), |mut c: Commands| {
@@ -119,11 +116,7 @@ pub struct PlayerDied {
     pub position: Vec2,
 }
 
-#[derive(Message, Debug, Clone, Copy)]
-pub struct BossDefeated {
-    pub level: u32,
-}
-
+#[allow(unused)]
 #[derive(Resource)]
 struct PhaseTimer(Timer);
 

@@ -71,6 +71,7 @@ impl Health {
         self.current / self.max
     }
 
+    #[allow(unused)]
     pub fn heal(&mut self, amount: f32) {
         self.current = (self.current + amount).min(self.max);
     }

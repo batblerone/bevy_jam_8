@@ -1,7 +1,9 @@
+#[allow(unused)]
 use bevy::{
     asset::{ReflectAsset, UntypedAssetId},
     camera::{Viewport, visibility::RenderLayers},
     color::palettes::tailwind::*,
+    input::common_conditions::input_toggle_active,
     picking::pointer::{PointerAction, PointerInput, PointerInteraction},
     prelude::*,
     reflect::TypeRegistry,
@@ -19,7 +21,19 @@ use egui_dock::{DockArea, DockState, NodeIndex, Style};
 use std::any::TypeId;
 // use transform_gizmo_bevy::{GizmoCamera, GizmoTarget, TransformGizmoPlugin};
 
+/// Whether or not the game editor view is visible.
+#[derive(States, Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]
+pub struct InspectorOpen(pub bool);
+
+#[allow(unused)]
+pub fn toggle_editor(
+    editor_state: Res<State<InspectorOpen>>,
+    next_state: ResMut<NextState<InspectorOpen>>,
+) {
+    todo!()
+}
 pub(super) fn plugin(app: &mut App) {
+    app.init_state::<InspectorOpen>();
     app.add_plugins(TransformGizmoPlugin);
     // app.add_plugins(bevy_framepace::FramepacePlugin); // reduces input lag
     app.add_plugins(bevy_egui::EguiPlugin::default());
@@ -340,6 +354,7 @@ fn setup(mut commands: Commands, mut egui_global_settings: ResMut<EguiGlobalSett
         Name::new("Egui Camera"),
         PrimaryEguiContext,
         RenderLayers::none(),
+        TransformGizmoCamera,
         Camera {
             order: 1,
             clear_color: ClearColorConfig::None,
