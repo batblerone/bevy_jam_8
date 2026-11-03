@@ -4,6 +4,7 @@
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
+#[allow(unused)]
 use crate::game::{player::*, progression::*, score::*};
 
 pub const STARTING_LIVES: u32 = 3;

@@ -5,6 +5,7 @@
 
 use bevy::prelude::*;
 
+#[allow(unused)]
 use crate::{
     game::{
         player::{Player, PlayerAssets, SelectedPlayer},
@@ -24,6 +25,7 @@ const BAR_BACK: Color = Color::srgba(0.0, 0.0, 0.0, 0.5);
 const HEALTH_COLOR: Color = Color::srgb(0.85, 0.25, 0.25);
 const ENERGY_COLOR: Color = Color::srgb(0.95, 0.8, 0.3);
 
+#[allow(unused)]
 pub(super) fn plugin(app: &mut App) {
     // app.add_systems(OnEnter(Screen::Gameplay), spawn_hud.after(RunSetup));
     // app.add_systems(
@@ -170,6 +172,7 @@ fn update_life_icons(lives: Res<Lives>, mut icons: Query<(&LifeIcon, &mut Node)>
     }
 }
 
+#[allow(unused)]
 fn update_player_bars(
     time: Res<Time>,
     crow: Query<(&Health), With<Player>>,

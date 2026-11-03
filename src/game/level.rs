@@ -6,6 +6,7 @@
 
 use bevy::{prelude::*, window::PrimaryWindow};
 
+#[allow(unused)]
 use crate::{
     PausableSystems,
     asset_tracking::LoadResource,
@@ -67,6 +68,7 @@ impl FromWorld for LevelAssets {
 }
 
 /// Spawns the level: music, the crow, and enough river to fill the screen.
+#[allow(unused)]
 pub fn spawn_level(
     mut commands: Commands,
     level_assets: Res<LevelAssets>,

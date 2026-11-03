@@ -7,6 +7,7 @@ const ATLAS_WIDTH: u32 = 64;
 const SPAWN_INVUL: f32 = 2.0;
 
 use avian2d::prelude::*;
+#[allow(unused)]
 use bevy::{
     image::{ImageLoaderSettings, ImageSampler, TextureAtlasTemplate},
     prelude::*,
@@ -172,6 +173,7 @@ pub fn player_base_scene(kind: PlayerKind) -> impl Scene {
 }
 
 /// The actual player character, ready to fly into the world anew
+#[allow(unused)]
 pub fn player(kind: PlayerKind, assets: &PlayerAssets) -> impl Scene {
     let animation = PlayerAnimation::new();
     let sheet = assets.sheet(kind);
