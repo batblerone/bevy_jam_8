@@ -16,6 +16,8 @@ pub mod progression;
 pub mod score;
 mod shop;
 
+mod user_interface;
+
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((
         progression::plugin,
@@ -27,5 +29,6 @@ pub(super) fn plugin(app: &mut App) {
         physics::plugin,
         hud::plugin,
         animation::plugin,
+        user_interface::plugin,
     ));
 }

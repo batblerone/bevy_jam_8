@@ -36,6 +36,9 @@ pub(super) fn plugin(app: &mut App) {
     // Update systems
     app.add_systems(Update, tick_night_clock.run_if(in_state(GamePhase::Night)));
     app.add_systems(Update, test_advance_phase.run_if(resource_exists::<State<GamePhase>>));
+
+    // OnExit systems
+    app.add_systems(OnExit(GamePhase::Night), end_night_phase);
 }
 
 // ------ State Data for managing game flow ------
@@ -150,6 +153,7 @@ pub struct NightTickEvent {
     pub delta_time: Duration,
     /// Total time elapsed since the night started (useful for milestones/scheduling events)
     pub total_elapsed: Duration,
+    pub fraction: f32,
 }
 
 // ------ The actual systems of the game manager ------
@@ -204,6 +208,7 @@ fn tick_night_clock(
     messages.write(NightTickEvent {
         delta_time: delta,
         total_elapsed: night_ticker.timer.elapsed(),
+        fraction: night_ticker.timer.fraction(),
     });
 
     if night_ticker.timer.just_finished() {
@@ -215,17 +220,37 @@ fn tick_night_clock(
 }
 
 fn start_day_phase(mut run_cycle: ResMut<RunCycle>) {
-    println!("\n ----- Starting day phase! ----- \n");
-
     // Increment the day counter for the run cycle
     run_cycle.current_day += 1;
     println!("Cycle {}", run_cycle.current_day);
 }
 
 /// Resets the night clock timer to 0.0 seconds
-fn start_night_phase(mut night_ticker: ResMut<NightTicker>) {
-    println!("\n\n ----- Starting night phase! -----\n\n");
-    night_ticker.timer.reset(); 
+fn start_night_phase(
+    night_ticker: ResMut<NightTicker>,
+    messages: MessageWriter<NightTickEvent>
+) {
+    reset_night_clock(night_ticker, messages);
+}
+
+fn end_night_phase(
+    night_ticker: ResMut<NightTicker>,
+    messages: MessageWriter<NightTickEvent>
+) {
+    reset_night_clock(night_ticker, messages);
+}
+
+fn reset_night_clock(
+    mut night_ticker: ResMut<NightTicker>,
+    mut messages: MessageWriter<NightTickEvent>,
+) {
+    night_ticker.timer.reset();
+
+    messages.write(NightTickEvent {
+        delta_time: std::time::Duration::ZERO,
+        total_elapsed: night_ticker.timer.elapsed(),
+        fraction: night_ticker.timer.fraction(),
+    });
 }
 
 /// A debug system to manually push the game from Day to Night for testing purposes
