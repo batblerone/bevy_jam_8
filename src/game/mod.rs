@@ -14,12 +14,14 @@ pub mod physics;
 pub mod player;
 pub mod progression;
 pub mod score;
+mod shop;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((
         progression::plugin,
         score::plugin,
         level::plugin,
+        shop::plugin,
         player::plugin,
         movement::plugin,
         physics::plugin,

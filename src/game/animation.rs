@@ -147,6 +147,7 @@ impl PlayerAnimation {
     /// The number of frames per directional animation loop
     const FRAMES_PER_DIRECTION: usize = 1; // One frame each direction
     
+    #[allow(unused)]
     fn default() -> Self {
         Self::idling()
     }

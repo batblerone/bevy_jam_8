@@ -55,6 +55,7 @@ impl GameLayer {
     }
 
     /// Enemies hit the player and player bullets, and pass over walls and each other.
+    #[allow(unused)]
     pub fn enemy_layers() -> CollisionLayers {
         CollisionLayers::new(
             GameLayer::Enemy,
@@ -63,12 +64,14 @@ impl GameLayer {
     }
     
     /// Bosses hit the player and player bullets only, they can fly over anything
+    #[allow(unused)]
     pub fn boss_layers() -> CollisionLayers {
         CollisionLayers::new(GameLayer::Enemy, [GameLayer::Player,
             GameLayer::PlayerBullet])
     }
 
     /// Player bullets collide with enemies, walls and (shootable) pickups
+    #[allow(unused)]
     pub fn player_bullet_layers() -> CollisionLayers {
         CollisionLayers::new(
             GameLayer::PlayerBullet,
@@ -77,6 +80,7 @@ impl GameLayer {
     }
 
     /// Enemy bullets collide with Player and Walls
+    #[allow(unused)]
     pub fn enemy_bullet_layers() -> CollisionLayers {
         CollisionLayers::new(
             GameLayer::EnemyBullet,
@@ -84,11 +88,13 @@ impl GameLayer {
         )
     }
 
+    #[allow(unused)]
     pub fn wall_layers() -> CollisionLayers {
         CollisionLayers::new(GameLayer::Walls, LayerMask::ALL) // Everything is capable of colliding with the walls
     }
     
     /// Only crows interact with pickups 
+    #[allow(unused)]
     pub fn pickup_layers() -> CollisionLayers {
         CollisionLayers::new(GameLayer::Pickup, [GameLayer::Player, GameLayer::PlayerBullet])
     }

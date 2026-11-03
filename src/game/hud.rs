@@ -5,6 +5,7 @@
 
 use bevy::prelude::*;
 
+#[allow(unused)]
 use crate::{
     game::{
         player::{Player, PlayerAssets, SelectedPlayer},
@@ -16,14 +17,21 @@ use crate::{
     theme::{palette::LABEL_TEXT, widget},
 };
 
+#[allow(unused)]
 const BAR_WIDTH: f32 = 220.0;
+#[allow(unused)]
 const BAR_HEIGHT: f32 = 14.0;
+#[allow(unused)]
 const LIFE_ICON_SIZE: f32 = 32.0;
 
+#[allow(unused)]
 const BAR_BACK: Color = Color::srgba(0.0, 0.0, 0.0, 0.5);
+#[allow(unused)]
 const HEALTH_COLOR: Color = Color::srgb(0.85, 0.25, 0.25);
+#[allow(unused)]
 const ENERGY_COLOR: Color = Color::srgb(0.95, 0.8, 0.3);
 
+#[allow(unused)]
 pub(super) fn plugin(app: &mut App) {
     // app.add_systems(OnEnter(Screen::Gameplay), spawn_hud.after(RunSetup));
     // app.add_systems(
@@ -39,13 +47,16 @@ pub(super) fn plugin(app: &mut App) {
     // app.add_systems(OnEnter(GamePhase::GameOver), spawn_game_over_panel);
 }
 
+#[allow(unused)]
 #[derive(Component)]
 struct ScoreText;
 
+#[allow(unused)]
 #[derive(Component)]
 struct LevelText;
 
 /// The nth crow icon in the lives row.
+#[allow(unused)]
 #[derive(Component)]
 struct LifeIcon(u32);
 
@@ -55,6 +66,7 @@ struct HealthFill;
 #[derive(Component)]
 struct EnergyFill;
 
+#[allow(unused)]
 fn spawn_hud(
     mut commands: Commands,
     score: Res<Score>,
@@ -152,14 +164,17 @@ fn level_label(level: u32) -> String {
     format!("Level {level}")
 }
 
+#[allow(unused)]
 fn update_score_text(score: Res<Score>, mut text: Single<&mut Text, With<ScoreText>>) {
     text.0 = score_label(score.current);
 }
 
+#[allow(unused)]
 fn update_level_text(progress: Res<LevelProgress>, mut text: Single<&mut Text, With<LevelText>>) {
     text.0 = level_label(progress.level);
 }
 
+#[allow(unused)]
 fn update_life_icons(lives: Res<Lives>, mut icons: Query<(&LifeIcon, &mut Node)>) {
     for (icon, mut node) in &mut icons {
         node.display = if icon.0 < lives.0 {
@@ -170,6 +185,7 @@ fn update_life_icons(lives: Res<Lives>, mut icons: Query<(&LifeIcon, &mut Node)>
     }
 }
 
+#[allow(unused)]
 fn update_player_bars(
     time: Res<Time>,
     crow: Query<(&Health), With<Player>>,
@@ -239,6 +255,7 @@ fn spawn_stat_bar(
 
 // ---- Phase overlays ----
 
+#[allow(unused)]
 fn banner(text: String, phase: GamePhase) -> impl Bundle {
     (
         widget::ui_root("Banner"),
@@ -248,6 +265,7 @@ fn banner(text: String, phase: GamePhase) -> impl Bundle {
     )
 }
 
+#[allow(unused)]
 fn spawn_respawn_banner(mut commands: Commands, lives: Res<Lives>) {
     let crows = if lives.0 == 1 { "crow" } else { "crows" };
     commands.spawn(banner(
@@ -256,6 +274,7 @@ fn spawn_respawn_banner(mut commands: Commands, lives: Res<Lives>) {
     ));
 }
 
+#[allow(unused)]
 fn spawn_level_clear_banner(mut commands: Commands, progress: Res<LevelProgress>) {
     // `advance` runs at the end of LevelClear, so this is the level just beaten.
     commands.spawn(banner(
@@ -264,6 +283,7 @@ fn spawn_level_clear_banner(mut commands: Commands, progress: Res<LevelProgress>
     ));
 }
 
+#[allow(unused)]
 fn spawn_game_over_panel(mut commands: Commands, score: Res<Score>) {
     commands.spawn((
         widget::ui_root("Game Over"),
