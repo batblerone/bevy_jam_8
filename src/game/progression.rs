@@ -25,7 +25,7 @@ pub(super) fn plugin(app: &mut App) {
         Update,
         check_boss_threshold
             .run_if(resource_changed::<Score>)
-            .run_if(in_state(GamePhase::Nighttime))
+            .run_if(in_state(GamePhase::Night))
             // Look at score after this frames kills have been processed
             .after(add_points_for_kills)
             .run_if(in_state(Screen::Gameplay)),
