@@ -6,6 +6,8 @@
 
 use bevy::prelude::*;
 
+pub mod data;
+
 mod animation;
 mod hud;
 pub mod level;

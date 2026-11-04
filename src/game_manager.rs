@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 
 #[allow(unused)]
 use crate::game::{player::*, progression::*, score::*};
+use crate::game::data::AlchemyDatabase;
 
 pub const STARTING_LIVES: u32 = 3;
 
@@ -24,6 +25,7 @@ pub(super) fn plugin(app: &mut App) {
     app.init_resource::<Lives>();
     app.init_resource::<RunStart>();
     app.init_resource::<RunSeed>();
+    app.init_resource::<AlchemyDatabase>();
 
     app.add_message::<PlayerDied>();
     app.add_message::<NightTickEvent>();
@@ -168,6 +170,7 @@ fn start_run(
     mut run_cycle: ResMut<RunCycle>,
     current_phase: Res<State<GamePhase>>,
     mut next_phase: ResMut<NextState<GamePhase>>,
+    mut alchemyDatabase: ResMut<AlchemyDatabase>,
 ) {
     println!("\n\n ----- [RUN INITIALIZATION] ----- \n\n");
 
@@ -186,12 +189,14 @@ fn start_run(
             seed.0 = cp.seed;
         }
     }
+    // Reset the alchemy database for a new run
+    *alchemyDatabase = AlchemyDatabase::new();
 
+    // Reset the run cycle counter to Day 0
+    run_cycle.current_day = 0;
 
     // Force the game phase machine to switch directly to Day
     change_phase(*current_phase.get(), GamePhase::Day, &mut next_phase);
-    // Reset the run cycle counter to Day 0
-    run_cycle.current_day = 0;
 }
 
 fn tick_night_clock(
