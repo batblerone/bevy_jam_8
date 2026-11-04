@@ -42,7 +42,7 @@ pub(super) fn plugin(app: &mut App) {
     app.load_resource::<LevelAssets>();
 
     // `spawn_level` itself is registered in screens/gameplay.rs as
-    // `spawn_level.after(RunSetup)` (tutorial Step 1.3).
+    // `spawn_level.after(RunSetup)`
     app.add_systems(OnEnter(Screen::Gameplay), use_custom_background_colour);
     app.add_systems(OnExit(Screen::Gameplay), restore_background);
 }
@@ -67,7 +67,7 @@ impl FromWorld for LevelAssets {
     }
 }
 
-/// Spawns the level: music, the crow, and enough river to fill the screen.
+/// Spawns the level: music and the witch. The room comes from `game::shop`.
 #[allow(unused)]
 pub fn spawn_level(
     mut commands: Commands,
@@ -89,7 +89,8 @@ pub fn spawn_level(
         )],
     ));
 
-    // The player is a scene, so it's spawned on its own. `place_new_player`
-    // moves it into open water once the rows below exist.
+    // The player is a scene, so it's spawned on its own. The room itself is
+    // spawned by `shop::spawn_shop`, and `shop::place_player_at_spawn` moves
+    // the witch onto the `P` tile on her first frame.
     commands.spawn_scene(player(selected.0, &player_assets));
 }

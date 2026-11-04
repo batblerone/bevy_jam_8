@@ -1,12 +1,10 @@
-use bevy::prelude::*;
+use bevy::{picking::hover::Hovered, prelude::*, ui::Pressed};
 
 use crate::{asset_tracking::LoadResource, audio::sound_effect};
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_observer(apply_interaction_palette_on_click);
-    app.add_observer(apply_interaction_palette_on_over);
-    app.add_observer(apply_interaction_palette_on_out);
-    app.add_observer(apply_interaction_palette_on_release);
+    // Not a `PausableSystems` member: menus must react while the game is paused.
+    app.add_systems(Update, apply_interaction_palette);
 
     app.load_resource::<InteractionAssets>();
     app.add_observer(play_sound_effect_on_click);
@@ -22,6 +20,27 @@ pub struct InteractionPalette {
     pub none: Color,
     pub hovered: Color,
     pub pressed: Color,
+}
+
+/// Better captures input events, reacts better by responding to `PointerOver` / `PointerOut` events instead.
+fn apply_interaction_palette(
+    mut palette_query: Query<(
+        &InteractionPalette,
+        &Hovered,
+        Has<Pressed>,
+        &mut BackgroundColor,
+    )>,
+) {
+    for (palette, hovered, pressed, mut bg) in &mut palette_query {
+        let color = if pressed {
+            palette.pressed
+        } else if hovered.get() {
+            palette.hovered
+        } else {
+            palette.none
+        };
+        bg.set_if_neq(BackgroundColor(color));
+    }
 }
 
 fn apply_interaction_palette_on_click(

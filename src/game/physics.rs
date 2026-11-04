@@ -34,69 +34,33 @@ pub enum GameLayer {
     Default,
     Walls,
     Player,
-    Enemy,
-    PlayerBullet,
-    EnemyBullet,
     Pickup,
+    /// Shop stations: cauldrons, counters, crates...
+    Station,
 }
 
 impl GameLayer {
-    /// The player hits walls, enemies (rammed), and enemy bullets
+    /// The player hits walls, stations, enemies (rammed), and enemy bullets
     pub fn player_layers() -> CollisionLayers {
         CollisionLayers::new(
             GameLayer::Player,
-            [
-                GameLayer::Walls,
-                GameLayer::Enemy,
-                GameLayer::EnemyBullet,
-                GameLayer::Pickup,
-            ],
+            [GameLayer::Walls, GameLayer::Station, GameLayer::Pickup],
         )
     }
 
-    /// Enemies hit the player and player bullets, and pass over walls and each other.
-    #[allow(unused)]
-    pub fn enemy_layers() -> CollisionLayers {
-        CollisionLayers::new(
-            GameLayer::Enemy,
-            [GameLayer::Player, GameLayer::PlayerBullet, GameLayer::Walls],
-        )
-    }
-    
-    /// Bosses hit the player and player bullets only, they can fly over anything
-    #[allow(unused)]
-    pub fn boss_layers() -> CollisionLayers {
-        CollisionLayers::new(GameLayer::Enemy, [GameLayer::Player,
-            GameLayer::PlayerBullet])
-    }
-
-    /// Player bullets collide with enemies, walls and (shootable) pickups
-    #[allow(unused)]
-    pub fn player_bullet_layers() -> CollisionLayers {
-        CollisionLayers::new(
-            GameLayer::PlayerBullet,
-            [GameLayer::Enemy, GameLayer::Walls, GameLayer::Pickup],
-        )
-    }
-
-    /// Enemy bullets collide with Player and Walls
-    #[allow(unused)]
-    pub fn enemy_bullet_layers() -> CollisionLayers {
-        CollisionLayers::new(
-            GameLayer::EnemyBullet,
-            [GameLayer::Player, GameLayer::Walls],
-        )
-    }
-
-    #[allow(unused)]
     pub fn wall_layers() -> CollisionLayers {
         CollisionLayers::new(GameLayer::Walls, LayerMask::ALL) // Everything is capable of colliding with the walls
     }
-    
-    /// Only crows interact with pickups 
+
+    /// Stations are solid to everything that chooses to collide with them.
+    pub fn station_layers() -> CollisionLayers {
+        CollisionLayers::new(GameLayer::Station, LayerMask::ALL)
+    }
+
+    /// Only crows interact with pickups
     #[allow(unused)]
     pub fn pickup_layers() -> CollisionLayers {
-        CollisionLayers::new(GameLayer::Pickup, [GameLayer::Player, GameLayer::PlayerBullet])
+        CollisionLayers::new(GameLayer::Pickup, GameLayer::Player)
     }
 }
 

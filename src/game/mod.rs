@@ -16,7 +16,7 @@ pub mod physics;
 pub mod player;
 pub mod progression;
 pub mod score;
-mod shop;
+pub mod shop;
 
 mod user_interface;
 

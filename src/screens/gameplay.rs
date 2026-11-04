@@ -135,9 +135,10 @@ pub(super) fn plugin(app: &mut App) {
                     .and_then(not(in_state(Menu::None)))
                     .and_then(input_just_pressed(KeyCode::KeyP)),
             ),
-            collision_damage_and_bounce
-                .in_set(AppSystems::Update)
-                .in_set(PausableSystems),
+            // Commented out for now, damage can be taken out but keep knockback for cauldron explosions
+            // collision_damage_and_bounce
+            //     .in_set(AppSystems::Update)
+            //     .in_set(PausableSystems),
             spawn_healthbars,
             update_healthbars,
             (mark_dead, handle_deaths)
@@ -190,6 +191,7 @@ fn close_menu(mut next_menu: ResMut<NextState<Menu>>) {
 /// Which pairs that collide is still determined by `GameLayer`
 /// and defined collision masks
 /// Bullets are sensors, handled by `projectile_hits` instead.
+#[allow(dead_code)]
 pub fn collision_damage_and_bounce(
     mut collision_reader: MessageReader<CollisionStart>,
     collisions: Collisions,

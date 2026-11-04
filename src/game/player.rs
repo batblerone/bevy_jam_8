@@ -11,12 +11,13 @@ use avian2d::prelude::*;
 use bevy::{
     image::{ImageLoaderSettings, ImageSampler, TextureAtlasTemplate},
     prelude::*,
+    sprite_render::AlphaMode2d,
 };
 
 use crate::{
     AppSystems, PausableSystems,
     asset_tracking::LoadResource,
-    game::{animation::PlayerAnimation, movement::MovementController, physics::*},
+    game::{animation::PlayerAnimation, movement::MovementController, physics::*, shop::YSort},
     game_manager::Screen,
     screens::gameplay::Health,
 };
@@ -45,6 +46,7 @@ pub(super) fn plugin(app: &mut App) {
 // The marker for Player
 #[derive(Component, Reflect, Default, Clone)]
 #[reflect(Component)]
+#[require(YSort)]
 pub struct Player;
 
 // while present, the player ignores damage and blinks
@@ -130,10 +132,10 @@ impl PlayerKind {
         match self {
             PlayerKind::OrdinaryWitch => PlayerStats {
                 health: 100.0,
-                speed: 400.0,
+                speed: 160.0,
                 scale: 0.5,
                 color: Color::srgb(1.0, 0.5, 0.5),
-                collider_rad: 1.0,
+                collider_rad: 20.0,
             },
         }
     }
@@ -317,7 +319,13 @@ impl FromWorld for PlayerAssets {
             let mut materials = world.resource_mut::<Assets<ColorMaterial>>();
             PlayerKind::ALL
                 .iter()
-                .map(|kind| materials.add(ColorMaterial::from_color(kind.player_stats().color)))
+                .map(|kind| {
+                    materials.add(ColorMaterial {
+                        color: kind.player_stats().color,
+                        alpha_mode: AlphaMode2d::Blend,
+                        ..default()
+                        })
+                })
                 .collect()
         };
 
