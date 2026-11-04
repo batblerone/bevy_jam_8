@@ -116,8 +116,6 @@ fn init_camera(mut commands: Commands) {
         MainCamera,
         IsDefaultUiCamera,
         Projection::Orthographic(OrthographicProjection {
-            scaling_mode: ScalingMode::WindowSize,
-            scale: 0.01, // jscales one world unit to 100 window pixels
             ..OrthographicProjection::default_2d()
         }),
         Camera {

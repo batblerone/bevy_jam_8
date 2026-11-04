@@ -22,18 +22,16 @@ use std::any::TypeId;
 // use transform_gizmo_bevy::{GizmoCamera, GizmoTarget, TransformGizmoPlugin};
 
 /// Whether or not the game editor view is visible.
-#[derive(States, Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]
+#[derive(Resource, Default)]
 pub struct InspectorOpen(pub bool);
 
-#[allow(unused)]
-pub fn toggle_editor(
-    editor_state: Res<State<InspectorOpen>>,
-    next_state: ResMut<NextState<InspectorOpen>>,
-) {
-    todo!()
+pub fn toggle_editor(mut inspector_open: ResMut<InspectorOpen>, input: Res<ButtonInput<KeyCode>>) {
+    if input.just_pressed(KeyCode::F10) {
+        inspector_open.0 = !inspector_open.0;
+    }
 }
 pub(super) fn plugin(app: &mut App) {
-    app.init_state::<InspectorOpen>();
+    app.insert_resource(InspectorOpen(false));
     app.add_plugins(TransformGizmoPlugin);
     // app.add_plugins(bevy_framepace::FramepacePlugin); // reduces input lag
     app.add_plugins(bevy_egui::EguiPlugin::default());
@@ -42,7 +40,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(Startup, setup);
     app.add_systems(EguiPrimaryContextPass, show_ui_system);
     app.add_systems(PostUpdate, set_camera_viewport.after(show_ui_system));
-    app.add_systems(Update, draw_mesh_intersections);
+    app.add_systems(Update, (draw_mesh_intersections, toggle_editor));
     app.add_systems(PostUpdate, handle_pick_events);
     app.register_type::<Option<Handle<Image>>>();
     app.register_type::<AlphaMode>();
@@ -99,6 +97,11 @@ fn handle_pick_events(
 }
 
 fn show_ui_system(world: &mut World) {
+    let inspector_open = world.resource::<InspectorOpen>();
+    if !inspector_open.0 {
+        return;
+    }
+
     let Ok(mut egui_context) = world
         .query_filtered::<&mut EguiContext, With<PrimaryEguiContext>>()
         .single_mut(world)
