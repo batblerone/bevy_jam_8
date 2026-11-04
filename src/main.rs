@@ -120,7 +120,7 @@ fn init_camera(mut commands: Commands) {
         }),
         Camera {
             order: 0,
-            clear_color: ClearColorConfig::None,
+            clear_color: ClearColorConfig::Default,
             ..default()
         },
     ));
