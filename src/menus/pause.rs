@@ -1,14 +1,19 @@
 //! The pause menu.
 
-use bevy::{input::common_conditions::input_just_pressed, prelude::*};
+use bevy::prelude::*;
 
-use crate::{menus::Menu, game_manager::Screen, theme::widget};
+use crate::{
+    game_manager::Screen,
+    menus::Menu,
+    menus::navigation::{MenuBack, action_just_started},
+    theme::widget,
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Menu::Pause), spawn_pause_menu);
     app.add_systems(
         Update,
-        go_back.run_if(in_state(Menu::Pause).and_then(input_just_pressed(KeyCode::Escape))),
+        go_back.run_if(in_state(Menu::Pause).and_then(action_just_started::<MenuBack>)),
     );
 }
 

@@ -121,7 +121,7 @@ const Y_SORT_FACTOR: f32 = 0.01;
 #[reflect(Component)]
 pub struct YSort;
 
-fn y_sort(mut query: Query<&mut Transform, With<YSort>>) {
+pub fn y_sort(mut query: Query<&mut Transform, With<YSort>>) {
     for mut transform in &mut query {
         let target = z::WORLD + 5.0 - transform.translation.y * Y_SORT_FACTOR;
         // Only write when it changes, so change detection stays quiet for

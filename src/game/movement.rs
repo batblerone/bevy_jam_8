@@ -14,66 +14,169 @@
 //! consider using a [fixed timestep](https://github.com/bevyengine/bevy/blob/main/examples/movement/physics_in_fixed_timestep.rs).
 
 use avian2d::prelude::*;
-use bevy::{prelude::*, window::PrimaryWindow};
-
-use crate::{AppSystems, PausableSystems};
-use crate::game::physics::Knockback;
+use bevy::prelude::*;
+use bevy_enhanced_input::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(
-        Update,
-        (apply_movement, apply_screen_wrap)
-            .chain()
-            .in_set(AppSystems::Update)
-            .in_set(PausableSystems),
-    );
+    app.add_input_context::<Movement>()
+        .add_observer(walk)
+        .add_observer(stop_walking)
+        .add_observer(start_sprinting)
+        .add_observer(stop_sprinting)
+        .add_systems(PreUpdate, apply_intent.after(EnhancedInputSystems::Trigger));
 }
+
+/// Lets change our shit to bevy enhanced input
+/// We only have one movement context, and that is the player (or npc) is moving
+#[derive(Component, Default, Clone)]
+pub struct Movement;
+
+/// Structs for the movement vectors
+#[derive(InputAction, Debug)]
+#[action_output(Vec2)]
+pub struct Walking;
+
+/// Struct for toggling faster movement
+#[derive(InputAction, Debug)]
+#[action_output(bool)]
+pub struct Sprinting;
 
 /// These are the movement parameters for our character controller.
 /// For now, this is only used for a single player, but it could power NPCs or
 /// other players as well.
 #[derive(Component, Reflect, Clone)]
 #[reflect(Component)]
+#[require(MovementIntent)]
 pub struct MovementController {
-    /// The direction the character wants to move in.
-    pub intent: Vec2,
-
-    /// Maximum speed in world units per second.
-    /// 1 world unit = 1 pixel when using the default 2D camera and no physics engine.
-    pub max_speed: f32,
+    /// Speed in pixels per second
+    pub speed: f32,
+    /// Sprint multiplier
+    pub sprint_x: f32,
 }
 
 impl Default for MovementController {
     fn default() -> Self {
         Self {
-            intent: Vec2::ZERO,
-            // 400 pixels per second is a nice default, but we can still vary this per character.
-            max_speed: 400.0,
+            speed: 0.0,
+            sprint_x: 1.75,
         }
     }
 }
 
-fn apply_movement(mut movement_query: Query<(&MovementController, &mut LinearVelocity, Option<&Knockback>)>) {
-    for (controller, mut velocity, knockback) in &mut movement_query {
-        // Any bounce from a collision rides on top of players own movement
-        let shove = knockback.map_or(Vec2::ZERO, |k| k.0);
-        velocity.0 = controller.max_speed * controller.intent + shove;
+/// What the character is trying to do this frame, used for animation
+#[derive(Component, Reflect, Clone)]
+#[reflect(Component)]
+pub struct MovementIntent {
+    // the desired direction, zero when idle
+    pub direction: Vec2,
+    // last non zero direction normalized
+    pub facing: Vec2,
+    pub sprinting: bool,
+}
+
+impl Default for MovementIntent {
+    fn default() -> Self {
+        Self {
+            direction: Vec2::ZERO,
+            facing: Vec2::NEG_Y,
+            sprinting: false,
+        }
     }
 }
 
-#[derive(Component, Reflect, Clone, Default)]
-#[reflect(Component)]
-pub struct ScreenWrap;
+impl MovementIntent {
+    pub fn is_moving(&self) -> bool {
+        self.direction != Vec2::ZERO
+    }
 
-fn apply_screen_wrap(
-    window: Single<&Window, With<PrimaryWindow>>,
-    mut wrap_query: Query<&mut Transform, With<ScreenWrap>>,
+    // Only have left and right sprite sheet
+    pub fn facing(&self) -> Facing {
+        let f = self.facing;
+        if f.x > 0.0 {
+            Facing::Right
+        } else {
+            Facing::Left
+        }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum Facing {
+    Right,
+    Left,
+}
+
+/// Define the movement controller as a scene, that can be attached to other scenes.
+/// We can then attach our movement and context to the parent scene.
+pub fn movement_controller() -> impl Scene {
+    bsn! {
+        MovementController
+        Movement
+        Actions<Movement> [
+            Action::<Walking>::new()
+            DeadZone
+            Bindings [
+                {preset::cardinal::wasd_keys()}
+                --
+                {preset::cardinal::arrows()}
+                --
+                {preset::cardinal::dpad()}
+                --
+                {preset::axial::left_stick()}
+            ]
+            --
+            Action::<Sprinting>::new()
+            Bindings [
+                Binding(KeyCode::ShiftLeft)
+                --
+                Binding(GamepadButton::West)
+            ]
+        ]
+    }
+}
+
+/// Now define how movement actions affect the context
+fn walk(walk: On<Fire<Walking>>, mut intents: Query<&mut MovementIntent>) {
+    if let Ok(mut intent) = intents.get_mut(walk.context) {
+        debug!("{}", walk.value);
+        intent.direction = walk.value;
+        if let Some(dir) = walk.value.try_normalize() {
+            intent.facing = dir;
+        }
+    }
+}
+
+// Release all movement keys so movement stops, don't slide around
+fn stop_walking(walk: On<Complete<Walking>>, mut intents: Query<&mut MovementIntent>) {
+    if let Ok(mut intent) = intents.get_mut(walk.context) {
+        intent.direction = Vec2::ZERO;
+    }
+}
+
+fn start_sprinting(sprint: On<Start<Sprinting>>, mut intents: Query<&mut MovementIntent>) {
+    if let Ok(mut intent) = intents.get_mut(sprint.context) {
+        intent.sprinting = true;
+    }
+}
+
+fn stop_sprinting(sprint: On<Complete<Sprinting>>, mut intents: Query<&mut MovementIntent>) {
+    if let Ok(mut intent) = intents.get_mut(sprint.context) {
+        intent.sprinting = false;
+    }
+}
+
+/// Now apply the intents to the physics
+fn apply_intent(
+    mut move_things: Query<
+        (&MovementIntent, &MovementController, &mut LinearVelocity),
+        Changed<MovementIntent>,
+    >,
 ) {
-    let size = window.size() + 256.0;
-    let half_size = size / 2.0;
-    for mut transform in &mut wrap_query {
-        let position = transform.translation.xy();
-        let wrapped = (position + half_size).rem_euclid(size) - half_size;
-        transform.translation = wrapped.extend(transform.translation.z);
+    for (intent, controller, mut velocity) in &mut move_things {
+        let mut speed = controller.speed;
+        if intent.sprinting {
+            speed *= controller.sprint_x;
+        }
+        velocity.0 = intent.direction * speed;
     }
 }

@@ -12,6 +12,7 @@ use crate::{
         score::{EnemyDefeated, PointValue},
     },
     game_manager::{GamePhase, Menu, PausableSystems, Pause, PlayerDied, RunSetup},
+    menus::navigation::{TogglePause, action_just_started},
     screens::Screen,
 };
 
@@ -124,8 +125,10 @@ pub(super) fn plugin(app: &mut App) {
             (pause, spawn_pause_overlay, open_pause_menu).run_if(
                 in_state(Screen::Gameplay)
                     .and_then(in_state(Menu::None))
+                    // P / gamepad Start, or Escape. Not `MenuBack`: gamepad B is
+                    // `CharUse` in gameplay and must not open the pause menu.
                     .and_then(
-                        input_just_pressed(KeyCode::KeyP)
+                        action_just_started::<TogglePause>
                             .or_else(input_just_pressed(KeyCode::Escape)),
                     )
                     .and_then(not(in_state(GamePhase::GameOver))),
@@ -133,7 +136,7 @@ pub(super) fn plugin(app: &mut App) {
             close_menu.run_if(
                 in_state(Screen::Gameplay)
                     .and_then(not(in_state(Menu::None)))
-                    .and_then(input_just_pressed(KeyCode::KeyP)),
+                    .and_then(action_just_started::<TogglePause>),
             ),
             // Commented out for now, damage can be taken out but keep knockback for cauldron explosions
             // collision_damage_and_bounce

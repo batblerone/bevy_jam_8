@@ -3,7 +3,10 @@
 use std::borrow::Cow;
 
 use bevy::{
-    {picking::hover::Hovered, ui_widgets::Button},
+    {
+        picking::hover::Hovered, ui::auto_directional_navigation::AutoDirectionalNavigation,
+        ui_widgets::Button,
+    },
     ecs::{spawn::SpawnWith, system::IntoObserverSystem},
     prelude::*,
 };
@@ -108,6 +111,8 @@ where
                 .spawn((
                     Name::new("Button Inner"),
                     Button,
+                    // Reachable with arrows / d-pad / stick (see `menus::navigation`).
+                    AutoDirectionalNavigation::default(),
                     Hovered::default(),
                     BackgroundColor(BUTTON_BACKGROUND),
                     InteractionPalette {

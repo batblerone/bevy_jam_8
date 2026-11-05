@@ -1,8 +1,8 @@
 //! Player-specific behavior.
 
 /// Atlas constants
-const ATLAS_HEIGHT: u32 = 64;
-const ATLAS_WIDTH: u32 = 64;
+const SPRITE_HEIGHT: u32 = 128;
+const SPRITE_WIDTH: u32 = 225;
 
 const SPAWN_INVUL: f32 = 2.0;
 
@@ -17,7 +17,7 @@ use bevy::{
 use crate::{
     AppSystems, PausableSystems,
     asset_tracking::LoadResource,
-    game::{animation::PlayerAnimation, movement::MovementController, physics::*, shop::YSort},
+    game::{animation::PlayerAnimation, interaction::*, movement::*, physics::*, shop::YSort},
     game_manager::Screen,
     screens::gameplay::Health,
 };
@@ -25,21 +25,15 @@ use crate::{
 pub(super) fn plugin(app: &mut App) {
     app.load_resource::<PlayerAssets>();
     app.init_resource::<SelectedPlayer>();
-
-    // Record directional input as movement controls.
     app.add_systems(
         Update,
-        record_player_directional_input
-            .in_set(AppSystems::RecordInput)
-            .in_set(PausableSystems),
-    );
-
-    app.add_systems(
-        Update,
-        (grant_invincibility, tick_invincibility)
-            .chain()
-            .in_set(AppSystems::TickTimers)
-            .in_set(PausableSystems),
+        (
+            sync_atlas_size,
+            (grant_invincibility, tick_invincibility)
+                .chain()
+                .in_set(AppSystems::TickTimers)
+                .in_set(PausableSystems),
+        ),
     );
 }
 
@@ -98,6 +92,7 @@ pub struct PlayerSpriteSheet {
     pub rows: u32,
     // gap in pixels between frames in image
     pub padding: u32,
+    pub offset: UVec2, // For when lots of stuff is in their
 }
 
 // From here we define our player kinds, for now it is just one enum of a player, but if we have unlockable skins or players we can add others.
@@ -119,11 +114,12 @@ impl PlayerKind {
     pub fn player_sheet(self) -> PlayerSpriteSheet {
         match self {
             PlayerKind::OrdinaryWitch => PlayerSpriteSheet {
-                path: "images/crow_animated.png",
-                frame_size: UVec2::new(ATLAS_HEIGHT, ATLAS_WIDTH),
-                columns: 1,
-                rows: 5,
-                padding: 1,
+                path: "images/SpriteSheet.png",
+                frame_size: UVec2::new(SPRITE_HEIGHT, SPRITE_WIDTH),
+                columns: 6,
+                rows: 1,
+                padding: 0,
+                offset: UVec2::new(0, 1300),
             },
         }
     }
@@ -133,7 +129,7 @@ impl PlayerKind {
             PlayerKind::OrdinaryWitch => PlayerStats {
                 health: 100.0,
                 speed: 160.0,
-                scale: 0.5,
+                scale: 0.1,
                 color: Color::srgb(1.0, 0.5, 0.5),
                 collider_rad: 20.0,
             },
@@ -149,11 +145,11 @@ impl PlayerKind {
 /// Everything that the player is: identity, stats, movement, physics, lifetime, etc.
 pub fn player_base_scene(kind: PlayerKind) -> impl Scene {
     let stats = kind.player_stats();
-    let health = Health::new(stats.health);
     let controller = MovementController {
-        max_speed: stats.speed,
+        speed: stats.speed,
         ..default()
     };
+    let health = Health::new(stats.health);
     let collider = Collider::circle(stats.collider_rad);
     let layers = GameLayer::player_layers();
     let despawn = DespawnOnExit(Screen::Gameplay);
@@ -163,13 +159,15 @@ pub fn player_base_scene(kind: PlayerKind) -> impl Scene {
         Player
         kind
         health
-        controller
         RigidBody::Dynamic
         collider
         LockedAxes::ROTATION_LOCKED
         GravityScale(0.0)
         CollisionEventsEnabled
         layers
+        controller
+        @movement_controller()
+        @interaction_controller()
         despawn
     }
 }
@@ -194,48 +192,19 @@ pub fn player(kind: PlayerKind, assets: &PlayerAssets) -> impl Scene {
         // we want to pass off into our bsn! call. To do this we have to use the template
         // where then we have to `.into()` our layout to get the `HandleTemplate` needed for
         // `TextureAtlasTemplate`.
-        // Sprite {
-        //     image: sheet,
-        //     texture_atlas: {
-        //         Some(TextureAtlasTemplate{
-        //             layout: layout.into(),
-        //             index: index
-        //         })
-        //     }
-        // }
-        Mesh2d(mesh)
-        MeshMaterial2d::<ColorMaterial>(material)
+        Sprite {
+            image: sheet,
+            texture_atlas: {
+                Some(TextureAtlasTemplate{
+                    layout: layout.into(),
+                    index: index
+                })
+            }
+        }
+        // Mesh2d(mesh)
+        // MeshMaterial2d::<ColorMaterial>(material)
         transform
         animation
-    }
-}
-
-fn record_player_directional_input(
-    input: Res<ButtonInput<KeyCode>>,
-    mut controller_query: Query<&mut MovementController, With<Player>>,
-) {
-    // Collect directional input.
-    let mut intent = Vec2::ZERO;
-    if input.pressed(KeyCode::KeyW) || input.pressed(KeyCode::ArrowUp) {
-        intent.y += 1.0;
-    }
-    if input.pressed(KeyCode::KeyS) || input.pressed(KeyCode::ArrowDown) {
-        intent.y -= 1.0;
-    }
-    if input.pressed(KeyCode::KeyA) || input.pressed(KeyCode::ArrowLeft) {
-        intent.x -= 1.0;
-    }
-    if input.pressed(KeyCode::KeyD) || input.pressed(KeyCode::ArrowRight) {
-        intent.x += 1.0;
-    }
-
-    // Normalize intent so that diagonal movement is the same speed as horizontal / vertical.
-    // This should be omitted if the input comes from an analog stick instead.
-    let intent = intent.normalize_or_zero();
-
-    // Apply movement intent to controllers.
-    for mut controller in &mut controller_query {
-        controller.intent = intent;
     }
 }
 
@@ -301,7 +270,7 @@ impl FromWorld for PlayerAssets {
                         sheet.columns,
                         sheet.rows,
                         Some(UVec2::splat(sheet.padding)),
-                        None,
+                        Some(sheet.offset),
                     ))
                 })
                 .collect()
@@ -324,7 +293,7 @@ impl FromWorld for PlayerAssets {
                         color: kind.player_stats().color,
                         alpha_mode: AlphaMode2d::Blend,
                         ..default()
-                        })
+                    })
                 })
                 .collect()
         };
@@ -355,6 +324,32 @@ impl FromWorld for PlayerAssets {
             ],
             debug_mesh,
             debug_material,
+        }
+    }
+}
+
+fn sync_atlas_size(
+    player_assets: Option<Res<PlayerAssets>>,
+    images: Res<Assets<Image>>,
+    mut layouts: ResMut<Assets<TextureAtlasLayout>>,
+) {
+    let Some(player_assets) = player_assets else {
+        return;
+    };
+
+    for kind in PlayerKind::ALL {
+        let Some(image) = images.get(&player_assets.sheets[kind.index()]) else {
+            continue;
+        };
+
+        let Some(mut layout) = layouts.get_mut(&player_assets.layouts[kind.index()]) else {
+            continue;
+        };
+
+        // read the png dimensions
+        let image_size = image.size();
+        if layout.size != image_size {
+            layout.size = image_size;
         }
     }
 }

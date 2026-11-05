@@ -2,12 +2,12 @@
 //! save states and overall progress of the game.
 
 use bevy::{prelude::*, ui::debug};
-use std::time::Duration;
 use serde::{Deserialize, Serialize};
+use std::time::Duration;
 
+use crate::game::data::AlchemyDatabase;
 #[allow(unused)]
 use crate::game::{player::*, progression::*, score::*};
-use crate::game::data::AlchemyDatabase;
 
 pub const STARTING_LIVES: u32 = 3;
 
@@ -18,7 +18,7 @@ pub(super) fn plugin(app: &mut App) {
     app.init_state::<Pause>();
 
     // GamePhase is a sub-state of Screen::Gameplay, so it only exists when the game is in that state.
-    app.add_sub_state::<GamePhase>(); 
+    app.add_sub_state::<GamePhase>();
 
     app.init_resource::<RunCycle>();
     app.init_resource::<NightTicker>();
@@ -37,7 +37,10 @@ pub(super) fn plugin(app: &mut App) {
 
     // Update systems
     app.add_systems(Update, tick_night_clock.run_if(in_state(GamePhase::Night)));
-    app.add_systems(Update, test_advance_phase.run_if(resource_exists::<State<GamePhase>>));
+    app.add_systems(
+        Update,
+        test_advance_phase.run_if(resource_exists::<State<GamePhase>>),
+    );
 
     // OnExit systems
     app.add_systems(OnExit(GamePhase::Night), end_night_phase);
@@ -56,7 +59,7 @@ pub enum GamePhase {
     Day,
     Dusk,
     Victory,
-    GameOver
+    GameOver,
 }
 
 /// Systems that will set up a new run. Anything that spawns a level runs after it.
@@ -172,7 +175,7 @@ fn start_run(
     mut next_phase: ResMut<NextState<GamePhase>>,
     mut alchemyDatabase: ResMut<AlchemyDatabase>,
 ) {
-    println!("\n\n ----- [RUN INITIALIZATION] ----- \n\n");
+    debug!("\n\n ----- [RUN INITIALIZATION] ----- \n\n");
 
     // `take` resets `RunStart` to `NewGame`, so Retry after a Continue starts fresh.
     match std::mem::take(&mut *run_start) {
@@ -204,7 +207,7 @@ fn tick_night_clock(
     mut night_ticker: ResMut<NightTicker>,
     current_phase: Res<State<GamePhase>>,
     mut next_state: ResMut<NextState<GamePhase>>,
-    mut messages: MessageWriter<NightTickEvent>, 
+    mut messages: MessageWriter<NightTickEvent>,
 ) {
     // Tick the timer with frame delta time
     let delta = time.delta();
@@ -217,8 +220,8 @@ fn tick_night_clock(
     });
 
     if night_ticker.timer.just_finished() {
-        println!("Moon go sleep now! To dawn with thee...");
-        
+        // debug!("Moon go sleep now! To dawn with thee...");
+
         // Switch the game phase to Dawn
         change_phase(*current_phase.get(), GamePhase::Dawn, &mut next_state);
     }
@@ -227,21 +230,15 @@ fn tick_night_clock(
 fn start_day_phase(mut run_cycle: ResMut<RunCycle>) {
     // Increment the day counter for the run cycle
     run_cycle.current_day += 1;
-    println!("Cycle {}", run_cycle.current_day);
+    debug!("Cycle {}", run_cycle.current_day);
 }
 
 /// Resets the night clock timer to 0.0 seconds
-fn start_night_phase(
-    night_ticker: ResMut<NightTicker>,
-    messages: MessageWriter<NightTickEvent>
-) {
+fn start_night_phase(night_ticker: ResMut<NightTicker>, messages: MessageWriter<NightTickEvent>) {
     reset_night_clock(night_ticker, messages);
 }
 
-fn end_night_phase(
-    night_ticker: ResMut<NightTicker>,
-    messages: MessageWriter<NightTickEvent>
-) {
+fn end_night_phase(night_ticker: ResMut<NightTicker>, messages: MessageWriter<NightTickEvent>) {
     reset_night_clock(night_ticker, messages);
 }
 
@@ -264,8 +261,8 @@ fn test_advance_phase(
     current_phase: Res<State<GamePhase>>,
     mut next_state: ResMut<NextState<GamePhase>>,
 ) {
-    let shift_held = keyboard_input.pressed(KeyCode::ShiftLeft) 
-                  || keyboard_input.pressed(KeyCode::ShiftRight);
+    let shift_held =
+        keyboard_input.pressed(KeyCode::ShiftLeft) || keyboard_input.pressed(KeyCode::ShiftRight);
 
     let f1_pressed = keyboard_input.just_pressed(KeyCode::F1);
 
@@ -293,5 +290,5 @@ pub fn change_phase(
     next_state: &mut ResMut<NextState<GamePhase>>,
 ) {
     next_state.set(next);
-    println!("[PHASE TRANSITION] {:?} -> {:?}", current, next);
+    debug!("[PHASE TRANSITION] {:?} -> {:?}", current, next);
 }
