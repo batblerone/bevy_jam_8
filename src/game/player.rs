@@ -1,8 +1,8 @@
 //! Player-specific behavior.
 
 /// Atlas constants
-const SPRITE_HEIGHT: u32 = 128;
-const SPRITE_WIDTH: u32 = 225;
+const SPRITE_HEIGHT: u32 = 256;
+const SPRITE_WIDTH: u32 = 450;
 
 const SPAWN_INVUL: f32 = 2.0;
 
