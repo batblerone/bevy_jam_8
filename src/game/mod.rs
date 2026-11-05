@@ -19,7 +19,7 @@ pub mod player;
 pub mod progression;
 pub mod score;
 pub mod shop;
-
+mod stations;
 mod user_interface;
 
 pub(super) fn plugin(app: &mut App) {
