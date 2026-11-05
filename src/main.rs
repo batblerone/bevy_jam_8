@@ -15,8 +15,9 @@ mod screens;
 mod theme;
 
 use crate::game_manager::*;
-use avian2d::prelude::*;
-use bevy::{asset::AssetMetaCheck, camera::ScalingMode, prelude::*};
+use avian2d::PhysicsPlugins;
+use bevy::{asset::AssetMetaCheck, prelude::*};
+use bevy_enhanced_input::EnhancedInputPlugin;
 
 fn main() -> AppExit {
     App::new().add_plugins(AppPlugin).run()
@@ -49,6 +50,8 @@ impl Plugin for AppPlugin {
 
         // initialize the physics plugins
         app.add_plugins(PhysicsPlugins::default());
+        // Initialize the movement plugins
+        app.add_plugins(EnhancedInputPlugin);
 
         // Initialize the game manager before other custom plugins
         app.add_plugins(game_manager::plugin);

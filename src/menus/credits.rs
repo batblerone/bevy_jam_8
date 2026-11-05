@@ -1,14 +1,20 @@
 //! The credits menu.
 
-use bevy::{ecs::spawn::SpawnIter, input::common_conditions::input_just_pressed, prelude::*};
+use bevy::{ecs::spawn::SpawnIter, prelude::*};
 
-use crate::{asset_tracking::LoadResource, audio::music, menus::Menu, theme::prelude::*};
+use crate::{
+    asset_tracking::LoadResource,
+    audio::music,
+    menus::Menu,
+    menus::navigation::{MenuBack, action_just_started},
+    theme::prelude::*,
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Menu::Credits), spawn_credits_menu);
     app.add_systems(
         Update,
-        go_back.run_if(in_state(Menu::Credits).and_then(input_just_pressed(KeyCode::Escape))),
+        go_back.run_if(in_state(Menu::Credits).and_then(action_just_started::<MenuBack>)),
     );
 
     app.load_resource::<CreditsAssets>();
@@ -32,8 +38,9 @@ fn spawn_credits_menu(mut commands: Commands) {
 
 fn created_by() -> impl Bundle {
     grid(vec![
-        ["Joe Shmoe", "Implemented alligator wrestling AI"],
-        ["Jane Doe", "Made the music for the alien invasion"],
+        ["Justin Clouthier and Justin MacKinnon", "Programming"],
+        ["David Erskine and Duncan Osmond", "Art and Sprite Design"],
+        ["David Gibson and Heather LeBlanc", "Music and Sound Design"],
     ])
 }
 

@@ -11,7 +11,7 @@ use std::time::Duration;
 use crate::{
     AppSystems, PausableSystems,
     audio::sound_effect,
-    game::{movement::MovementController, player::PlayerAssets},
+    game::{movement::MovementIntent, player::PlayerAssets},
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -31,49 +31,35 @@ pub(super) fn plugin(app: &mut App) {
     );
 }
 
-/// Update the animation timer.
-fn update_animation_timer(time: Res<Time>, mut query: Query<&mut PlayerAnimation>) {
-    for mut animation in &mut query {
-        animation.update_timer(time.delta());
+/// Update the sprite direction and animation state (idling/walking).
+fn update_animation_movement(
+    mut player_query: Query<(&MovementIntent, &mut PlayerAnimation, &mut Sprite)>,
+) {
+    for (intent, mut animation, mut sprite) in &mut player_query {
+        let state = if intent.is_moving() {
+            PlayerAnimationState::Walking
+        } else {
+            PlayerAnimationState::Idling
+        };
+
+        animation.update_state(state);
+
+        // Use last facing direction, including when idle.
+        // Ignore vertical-only facing to retain the last flip.
+        if intent.facing.x.abs() > f32::EPSILON {
+            sprite.flip_x = intent.facing.x < 0.0;
+        }
     }
 }
 
-/// Update the sprite direction and animation state (idling/walking).
-fn update_animation_movement(
-    mut player_query: Query<(&MovementController, &mut PlayerAnimation)>,
+/// Advance animation based on movement and sprinting.
+fn update_animation_timer(
+    time: Res<Time>,
+    mut query: Query<(&MovementIntent, &mut PlayerAnimation)>,
 ) {
-    for (controller, mut animation) in &mut player_query {
-        let intent = controller.intent;
-
-        // We now map movement to a direciton, instead of a animation set
-        let direction = if intent == Vec2::ZERO {
-            PlayerDirection::Neutral
-        } else if intent.y > intent.x.abs() {
-            PlayerDirection::Up
-        } else if intent.y < -intent.x.abs() {
-            PlayerDirection::Down
-        } else if intent.x < 0.0 {
-            PlayerDirection::Left
-        } else {
-            PlayerDirection::Right
-        };
-
-        animation.update_direction(direction);
+    for (intent, mut animation) in &mut query {
+        animation.update_timer(time.delta(), intent.sprinting);
     }
-    // Legacy animation controler for a sprite sheet with multiple animation sets (Idel, walking, running etc.)
-    // for (controller, mut sprite, mut animation) in &mut player_query {
-    //     let dx = controller.intent.x;
-    //     if dx != 0.0 {
-    //         sprite.flip_x = dx < 0.0;
-    //     }
-
-    //     let animation_state = if controller.intent == Vec2::ZERO {
-    //         PlayerAnimationState::Idling
-    //     } else {
-    //         PlayerAnimationState::Walking
-    //     };
-    //     animation.update_state(animation_state);
-    // }
 }
 
 /// Update the texture atlas to reflect changes in the animation.
@@ -95,15 +81,13 @@ fn update_animation_atlas(mut query: Query<(&PlayerAnimation, &mut Sprite)>) {
 fn trigger_step_sound_effect(
     mut commands: Commands,
     player_assets: If<Res<PlayerAssets>>,
-    mut step_query: Query<&PlayerAnimation>,
+    step_query: Query<&PlayerAnimation>,
 ) {
-    for animation in &mut step_query {
-        if animation.state != PlayerDirection::Neutral
-            && animation.changed()
-            && (animation.frame == 2 || animation.frame == 5)
-        {
+    for animation in &step_query {
+        if animation.changed() && (animation.frame == 2 || animation.frame == 5) {
             let rng = &mut rand::rng();
             let random_step = player_assets.steps.choose(rng).unwrap().clone();
+
             commands.spawn(sound_effect(random_step));
         }
     }
@@ -111,107 +95,78 @@ fn trigger_step_sound_effect(
 
 /// Component that tracks player's animation state.
 /// It is tightly bound to the texture atlas we use.
-#[derive(Component, Reflect, Clone, Default)]
+#[derive(Component, Reflect, Clone)]
 #[reflect(Component)]
 pub struct PlayerAnimation {
     timer: Timer,
     frame: usize,
-    state: PlayerDirection, // Change to PlayerAnimationState for alternate spritesheets.
+    state: PlayerAnimationState,
 }
 
-#[derive(Reflect, PartialEq)]
+#[derive(Reflect, PartialEq, Eq, Clone, Copy, Default)]
 pub enum PlayerAnimationState {
+    #[default]
     Idling,
     Walking,
 }
 
-#[derive(Reflect, PartialEq, Eq, Clone, Copy, Default)]
-pub enum PlayerDirection {
-    #[default]
-    Neutral,
-    Up,
-    Down,
-    Left,
-    Right,
+impl Default for PlayerAnimation {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl PlayerAnimation {
     /// The number of idle frames.
-    const _IDLE_FRAMES: usize = 2;
+    const IDLE_FRAMES: usize = 1;
     /// The duration of each idle frame. Also used for directional animation.
     const IDLE_INTERVAL: Duration = Duration::from_millis(500);
     /// The number of walking frames.
-    const _WALKING_FRAMES: usize = 6;
+    const WALKING_FRAMES: usize = 6;
     /// The duration of each walking frame.
-    const _WALKING_INTERVAL: Duration = Duration::from_millis(50);
+    const WALKING_INTERVAL: Duration = Duration::from_millis(50);
+    /// same but for sprinting
+    const SPRIINT_INTERVAL: Duration = Duration::from_millis(10);
     /// The number of frames per directional animation loop
     const FRAMES_PER_DIRECTION: usize = 1; // One frame each direction
-    
-    #[allow(unused)]
-    fn default() -> Self {
-        Self::idling()
-    }
-
-    fn idling() -> Self {
-        Self {
-            timer: Timer::new(Self::IDLE_INTERVAL, TimerMode::Repeating),
-            frame: 0,
-            state: PlayerDirection::Neutral,
-        }
-    }
-
-    // Walking animations are not needed in Directional animation. Other functions for running or attacking
-    // are added as needed for more complex spritesheets.
-    // fn walking() -> Self {
-    //     Self {
-    //         timer: Timer::new(Self::WALKING_INTERVAL, TimerMode::Repeating),
-    //         frame: 0,
-    //         state: PlayerAnimationState::Walking,
-    //     }
-    // }
 
     pub fn new() -> Self {
-        Self::idling()
-    }
-
-    /// Update animation timers.
-    pub fn update_timer(&mut self, delta: Duration) {
-        self.timer.tick(delta);
-        if self.timer.is_finished() {
-            self.frame = (self.frame + 1) % Self::FRAMES_PER_DIRECTION;
+        Self {
+            timer: Timer::new(Self::WALKING_INTERVAL, TimerMode::Repeating),
+            frame: 0,
+            state: PlayerAnimationState::Idling,
         }
-        // if !self.timer.is_finished() {
-        //     return;
-        // }
-        // self.frame = (self.frame + 1)
-        //     % match self.state {
-        //         PlayerAnimationState::Idling => Self::IDLE_FRAMES,
-        //         PlayerAnimationState::Walking => Self::WALKING_FRAMES,
-        //     };
     }
 
-    /// Update direction for animation state
-    pub fn update_direction(&mut self, direction: PlayerDirection) {
-        if self.state != direction {
-            self.state = direction;
+    /// Update animation state if it changes.
+    pub fn update_state(&mut self, state: PlayerAnimationState) {
+        if self.state != state {
+            self.state = state;
             self.frame = 0;
             self.timer.reset();
         }
     }
 
-    // /// Update animation state if it changes.
-    // pub fn update_state(&mut self, state: PlayerAnimationState) {
-    //     if self.state != state {
-    //         match state {
-    //             PlayerAnimationState::Idling => *self = Self::idling(),
-    //             PlayerAnimationState::Walking => *self = Self::walking(),
-    //         }
-    //     }
-    // }
+    /// Update the timer
+    pub fn update_timer(&mut self, delta: Duration, sprinting: bool) {
+        if self.state == PlayerAnimationState::Idling {
+            return;
+        }
 
-    /// Whether animation changed this tick.
-    pub fn changed(&self) -> bool {
-        self.timer.is_finished()
+        let interval = if sprinting {
+            Self::SPRIINT_INTERVAL
+        } else {
+            Self::WALKING_INTERVAL
+        };
+
+        self.timer.set_duration(interval);
+        self.timer.tick(delta);
+
+        let advance = self.timer.times_finished_this_tick() as usize;
+
+        if advance > 0 {
+            self.frame = (self.frame + advance) % Self::WALKING_FRAMES;
+        }
     }
 
     /// Returns a sprite index in the atlas based on direction.
@@ -219,22 +174,13 @@ impl PlayerAnimation {
     /// of indicies. For now our n is 1 and each animation is only
     /// 1 frame, so 1 + 0.
     pub fn get_atlas_index(&self) -> usize {
-        let base_index = match self.state {
-            PlayerDirection::Neutral => 0,
-            PlayerDirection::Down => 1,
-            PlayerDirection::Up => 2,
-            PlayerDirection::Right => 3,
-            PlayerDirection::Left => 4,
-        };
-
-        base_index + self.frame
+        match self.state {
+            PlayerAnimationState::Idling => 0,
+            PlayerAnimationState::Walking => self.frame,
+        }
     }
 
-    // /// Return sprite index in the atlas.
-    // pub fn get_atlas_index(&self) -> usize {
-    //     match self.state {
-    //         PlayerAnimationState::Idling => self.frame,
-    //         PlayerAnimationState::Walking => 6 + self.frame,
-    //     }
-    // }
+    pub fn changed(&self) -> bool {
+        self.state == PlayerAnimationState::Walking && self.timer.just_finished()
+    }
 }

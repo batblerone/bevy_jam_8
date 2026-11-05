@@ -2,15 +2,21 @@
 //!
 //! Additional settings and accessibility options should go here.
 
-use bevy::{audio::Volume, input::common_conditions::input_just_pressed, prelude::*};
+use bevy::{audio::Volume, prelude::*};
 
-use crate::{audio::*, game_manager::Screen, menus::Menu, theme::prelude::*};
+use crate::{
+    audio::*,
+    game_manager::Screen,
+    menus::Menu,
+    menus::navigation::{MenuBack, action_just_started},
+    theme::prelude::*,
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Menu::Settings), spawn_settings_menu);
     app.add_systems(
         Update,
-        go_back.run_if(in_state(Menu::Settings).and_then(input_just_pressed(KeyCode::Escape))),
+        go_back.run_if(in_state(Menu::Settings).and_then(action_just_started::<MenuBack>)),
     );
 
     app.add_systems(

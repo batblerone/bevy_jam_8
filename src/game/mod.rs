@@ -6,18 +6,20 @@
 
 use bevy::prelude::*;
 
-pub mod data;
-
 mod animation;
+pub mod data;
 mod hud;
+mod interaction;
+pub mod items;
 pub mod level;
 mod movement;
+pub mod pause;
 pub mod physics;
 pub mod player;
 pub mod progression;
 pub mod score;
 pub mod shop;
-pub mod cauldron;
+mod stations;
 mod user_interface;
 
 pub(super) fn plugin(app: &mut App) {
@@ -28,10 +30,12 @@ pub(super) fn plugin(app: &mut App) {
         shop::plugin,
         player::plugin,
         movement::plugin,
+        interaction::plugin,
         physics::plugin,
         hud::plugin,
         animation::plugin,
-        cauldron::plugin,
+        items::plugin,
+        pause::plugin,
         user_interface::plugin,
     ));
 }
