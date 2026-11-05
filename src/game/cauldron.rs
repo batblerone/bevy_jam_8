@@ -123,4 +123,8 @@ impl Cauldron {
     pub fn unlock_cauldron(&mut self) {
         self.is_locked = false;
     }
+
+    pub fn cauldron_interact(&mut self) {
+        
+    }
 }
