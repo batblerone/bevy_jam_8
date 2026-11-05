@@ -17,7 +17,7 @@ pub mod player;
 pub mod progression;
 pub mod score;
 pub mod shop;
-
+pub mod cauldron;
 mod user_interface;
 
 pub(super) fn plugin(app: &mut App) {
@@ -31,6 +31,7 @@ pub(super) fn plugin(app: &mut App) {
         physics::plugin,
         hud::plugin,
         animation::plugin,
+        cauldron::plugin,
         user_interface::plugin,
     ));
 }

@@ -97,7 +97,7 @@ pub struct Potion {
 }
 
 // ==========================================
-// 3. DATABASE AND CRAFTING LOGIC
+// DATABASE AND CRAFTING LOGIC
 // ==========================================
 #[derive(Resource, Debug, Clone, Default)]
 pub struct AlchemyDatabase {
@@ -166,6 +166,10 @@ impl AlchemyDatabase {
 
     pub fn find_potion_by_recipe(&self, recipe: &Recipe) -> Option<&Potion> {
         self.potions.iter().find(|p| p.recipe.ingredients == recipe.ingredients)
+    }
+
+    pub fn find_potion_by_ingredients(&self, ingredients: &[IngredientKind]) -> Option<&Potion> {
+        self.potions.iter().find(|p| p.recipe.ingredients == ingredients)
     }
 
     pub fn find_potion_by_active_effects(&self, active_effects: &[IngredientEffect]) -> Option<&Potion> {

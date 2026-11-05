@@ -23,9 +23,7 @@ use avian2d::prelude::*;
 use bevy::{camera::ScalingMode, prelude::*, transform::TransformSystems};
 
 use crate::{
-    MainCamera,
-    game::{physics::GameLayer, player::Player},
-    game_manager::{RunSetup, Screen},
+    MainCamera, game::{self, cauldron::Cauldron, physics::GameLayer, player::Player}, game_manager::{RunSetup, Screen},
 };
 
 /// Size of one grid cell in world units.
@@ -378,6 +376,10 @@ impl ShopLayout {
             for (col, ch) in line.chars().enumerate() {
                 let tile = Tile::from_char(ch).ok_or(LayoutError::UnknownChar { row, col, ch })?;
                 tiles.push(tile);
+
+                if tile == Tile::Station(StationKind::Cauldron){
+                    println!("Cauldron found at row {row}, column {col}");
+                }
             }
         }
 
@@ -603,17 +605,32 @@ pub fn spawn_shop(mut commands: Commands, layout: Res<ShopLayout>) {
         ));
     }
 
+    let mut station_id = 0;
     for (tile, kind) in layout.iter() {
         // Y-sorting overwrites z for stations, so the starting z only matters
         // for the first frame.
         let pos = layout.tile_to_world(tile).extend(z::WORLD);
         match kind {
             Tile::Station(kind) => {
-                commands.spawn((
-                    station(kind),
-                    Transform::from_translation(pos),
-                    ChildOf(root),
-                ));
+                match kind {
+                    StationKind::Cauldron => {
+                        commands.spawn((
+                            Name::new(format!("Cauldron{station_id}")),
+                            game::cauldron::Cauldron::new(station_id),
+                            Transform::from_translation(pos),
+                            ChildOf(root),
+                        ));
+                    }
+                    _ => {
+                        commands.spawn((
+                            station(kind),
+                            Transform::from_translation(pos),
+                            ChildOf(root),
+                        ));
+                    }
+                }
+                
+                station_id += 1;
             }
             Tile::PlayerSpawn => {
                 commands.spawn((
