@@ -23,7 +23,10 @@ use avian2d::prelude::*;
 use bevy::{camera::ScalingMode, prelude::*, transform::TransformSystems};
 
 use crate::{
-    MainCamera, game::{self, cauldron::Cauldron, physics::GameLayer, player::Player}, game_manager::{RunSetup, Screen},
+    MainCamera,
+    game::stations::cauldron::*,
+    game::{physics::GameLayer, player::Player},
+    game_manager::{RunSetup, Screen},
 };
 
 /// Size of one grid cell in world units.
@@ -377,7 +380,7 @@ impl ShopLayout {
                 let tile = Tile::from_char(ch).ok_or(LayoutError::UnknownChar { row, col, ch })?;
                 tiles.push(tile);
 
-                if tile == Tile::Station(StationKind::Cauldron){
+                if tile == Tile::Station(StationKind::Cauldron) {
                     println!("Cauldron found at row {row}, column {col}");
                 }
             }
@@ -616,7 +619,7 @@ pub fn spawn_shop(mut commands: Commands, layout: Res<ShopLayout>) {
                     StationKind::Cauldron => {
                         commands.spawn((
                             Name::new(format!("Cauldron{station_id}")),
-                            game::cauldron::Cauldron::new(station_id),
+                            Cauldron::new(station_id),
                             Transform::from_translation(pos),
                             ChildOf(root),
                         ));
@@ -629,7 +632,7 @@ pub fn spawn_shop(mut commands: Commands, layout: Res<ShopLayout>) {
                         ));
                     }
                 }
-                
+
                 station_id += 1;
             }
             Tile::PlayerSpawn => {
