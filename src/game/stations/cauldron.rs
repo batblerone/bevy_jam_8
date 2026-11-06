@@ -1,29 +1,11 @@
 use bevy::prelude::*;
 
 use crate::game::data::{AlchemyDatabase, Ingredient, IngredientKind, Potion};
-<<<<<<< HEAD
-use crate::game::interaction::Interacted;
-use crate::game::items::ItemPlaced;
-=======
 use crate::game::interaction::{Interacted};
 use crate::game::items::{ItemPlaced};
->>>>>>> ddd83dee4f0bf99ed792ac542c7a3260aae5ab23
 use crate::game_manager::{GamePhase, NightTickEvent};
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(
-        Update,
-        (
-            Cauldron::on_brew_tick.run_if(in_state(GamePhase::Night)),
-            sync_cauldron_visuals,
-            animate_cauldron_sprites,
-        ),
-    );
-<<<<<<< HEAD
-    app.add_observer(observe_cauldron_interact);
-    app.add_observer(observe_cauldron_interact_ingredient);
-=======
-=======
     app.add_systems(Update, (
         Cauldron::on_brew_tick.run_if(in_state(GamePhase::Night)),
         sync_cauldron_visuals,
@@ -31,8 +13,6 @@ pub(super) fn plugin(app: &mut App) {
     ));
     app.add_observer(observe_cauldron_interact);
     app.add_observer(observe_cauldron_interact_ingredient);
->>>>>>> fe4f6aacd26d3a92c61e97f1eb388f615984abc8
->>>>>>> ddd83dee4f0bf99ed792ac542c7a3260aae5ab23
 }
 
 #[derive(Component, Debug, Clone)]
@@ -88,31 +68,6 @@ impl Cauldron {
         }
     }
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-    pub fn remove_ingredient_by_type(&mut self, ingredient: IngredientKind) {
-        if let Some(pos) = self.ingredients.iter().position(|&x| x == ingredient) {
-            self.ingredients.remove(pos);
-        }
-    }
-
-    pub fn remove_ingredient_by_index(&mut self, index: usize) {
-        if index < self.ingredients.len() {
-            self.ingredients.remove(index);
-        }
-    }
-
-    pub fn clear_ingredients(&mut self) {
-        if !self.is_brewing {
-            self.ingredients.clear();
-            self.reset_brewing();
-        }
-    }
-
-=======
->>>>>>> fe4f6aacd26d3a92c61e97f1eb388f615984abc8
->>>>>>> ddd83dee4f0bf99ed792ac542c7a3260aae5ab23
     pub fn start_brewing(&mut self) {
         if !self.is_brewing && !self.is_broken && !self.ingredients.is_empty() {
             self.is_brewing = true;
@@ -121,10 +76,7 @@ impl Cauldron {
     }
 
     pub fn complete_brew(&mut self, alchemy_database: &AlchemyDatabase) {
-        println!(
-            "Cauldron (station_id: {}) completed brewing with ingredients: {:?}",
-            self.station_id, self.ingredients
-        );
+        println!("Cauldron (station_id: {}) completed brewing with ingredients: {:?}", self.station_id, self.ingredients);
         self.brewed_potion = alchemy_database
             .find_potion_by_ingredients(&self.ingredients)
             .cloned();
@@ -153,14 +105,6 @@ impl Cauldron {
     pub fn unlock_cauldron(&mut self) {
         self.is_locked = false;
     }
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-
-    pub fn cauldron_interact(&mut self) {}
-=======
->>>>>>> fe4f6aacd26d3a92c61e97f1eb388f615984abc8
->>>>>>> ddd83dee4f0bf99ed792ac542c7a3260aae5ab23
 }
 
 #[derive(Component, Debug, Default)]
@@ -230,14 +174,6 @@ fn animate_cauldron_sprites(
         }
     }
 }
-<<<<<<< HEAD
-
-pub fn observe_cauldron_interact(event: On<Interacted>, mut cauldron_query: Query<&mut Cauldron>) {
-    if let Ok(mut cauldron) = cauldron_query.get_mut(event.entity) {
-        if (cauldron.is_harvestable()) {
-=======
-<<<<<<< HEAD
-=======
 
 pub fn observe_cauldron_interact(
     event: On<Interacted>,
@@ -245,7 +181,6 @@ pub fn observe_cauldron_interact(
 ){
     if let Ok(mut cauldron) = cauldron_query.get_mut(event.entity) {
         if(cauldron.is_harvestable()){
->>>>>>> ddd83dee4f0bf99ed792ac542c7a3260aae5ab23
             let brewed_potion = cauldron.harvest_brewed_potion();
 
             // TODO: Give brewed potion to player
@@ -257,28 +192,15 @@ pub fn observe_cauldron_interact_ingredient(
     event: On<ItemPlaced>,
     mut cauldron_query: Query<&mut Cauldron>,
     ingredient_query: Query<&Ingredient>,
-<<<<<<< HEAD
-) {
-    println!("{}, {}, {}", event.by, event.item, event.entity);
-
-    if let Ok(mut ingredient) = ingredient_query.get(event.item) {
-        if let Ok(mut cauldron) = cauldron_query.get_mut(event.entity) {
-            if (!cauldron.is_brewing) {
-=======
 ){
     println!("{}, {}, {}", event.by, event.item, event.entity);
   
     if let Ok(mut ingredient) = ingredient_query.get(event.item){
         if let Ok(mut cauldron) = cauldron_query.get_mut(event.entity) {
             if(!cauldron.is_brewing){
->>>>>>> ddd83dee4f0bf99ed792ac542c7a3260aae5ab23
                 cauldron.add_ingredient(ingredient.kind);
                 cauldron.start_brewing();
             }
         }
     }
 }
-<<<<<<< HEAD
-=======
->>>>>>> fe4f6aacd26d3a92c61e97f1eb388f615984abc8
->>>>>>> ddd83dee4f0bf99ed792ac542c7a3260aae5ab23
