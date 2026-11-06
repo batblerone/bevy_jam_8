@@ -8,12 +8,13 @@ use bevy::prelude::*;
 #[allow(unused)]
 use crate::{
     game::{
+        customer::Customer,
         player::{Player, PlayerAssets, SelectedPlayer},
         progression::LevelProgress,
         score::{Score, score_label},
     },
     game_manager::{GamePhase, Lives, RunSetup, Screen},
-    screens::gameplay::Health,
+    screens::gameplay::Patience,
     theme::{palette::LABEL_TEXT, widget},
 };
 
@@ -188,7 +189,7 @@ fn update_life_icons(lives: Res<Lives>, mut icons: Query<(&LifeIcon, &mut Node)>
 #[allow(unused)]
 fn update_player_bars(
     time: Res<Time>,
-    crow: Query<(&Health), With<Player>>,
+    crow: Query<(&Patience), With<Customer>>,
     mut health_fill: Single<&mut Node, (With<HealthFill>, Without<EnergyFill>)>,
     mut energy_fill: Single<
         (&mut Node, &mut BackgroundColor),

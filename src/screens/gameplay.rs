@@ -21,24 +21,24 @@ const BOUNCE_SPEED: f32 = 600.0;
 /// Seconds of invulnerability to contact damage after a hit
 const HURT_COOLDOWN: f32 = 0.5;
 
-const HEALTHBAR_WIDTH: f32 = 50.0;
-const HEALTHBAR_HEIGHT: f32 = 6.0;
-const HEALTHBAR_Y_OFFSET: f32 = 43.0;
-const HEALTHBAR_Z_OFFSET: f32 = 1.0;
+const PATIENCEBAR_WIDTH: f32 = 50.0;
+const PATIENCEBAR_HEIGHT: f32 = 6.0;
+const PATIENCEBAR_Y_OFFSET: f32 = 100.0;
+const PATIENCEBAR_Z_OFFSET: f32 = 1.0;
 /// Small z bump so the foreground always renders on top of the background.
-const HEALTHBAR_FG_Z_BUMP: f32 = 0.01;
-/// Marker: this entity is the colored fill of a healthbar.
+const PATIENCEBAR_FG_Z_BUMP: f32 = 0.01;
+/// Marker: this entity is the colored fill of a patiencebar.
 #[derive(Component)]
-pub struct HealthBarForeground;
-/// Links a healthbar entity back to its owner character.
+pub struct PatienceBarForeground;
+/// Links a Patiencebar entity back to its owner character.
 #[derive(Component)]
-pub struct HealthBarOwner(pub Entity);
+pub struct PatienceBarOwner(pub Entity);
 
-/// A health component for damageable entities
+/// A Patience component for damageable entities
 #[derive(Component, Reflect, Clone)]
 #[reflect(Component)]
 #[require(Knockback, HurtCooldown)]
-pub struct Health {
+pub struct Patience {
     pub current: f32,
     pub max: f32,
 }
@@ -48,13 +48,13 @@ pub struct Health {
 #[reflect(Component)]
 pub struct IsDead;
 
-impl Default for Health {
+impl Default for Patience {
     fn default() -> Self {
         Self::new(1.0)
     }
 }
 
-impl Health {
+impl Patience {
     pub fn new(max: f32) -> Self {
         Self { current: max, max }
     }
@@ -67,7 +67,7 @@ impl Health {
         self.current > 0.0
     }
 
-    // Returns health as a ratio [0, 1]
+    // Returns Patience as a ratio [0, 1]
     pub fn h_ratio(&self) -> f32 {
         self.current / self.max
     }
@@ -80,10 +80,10 @@ impl Health {
 
 pub fn mark_dead(
     mut commands: Commands,
-    query: Query<(Entity, &Health), (Changed<Health>, Without<IsDead>)>,
+    query: Query<(Entity, &Patience), (Changed<Patience>, Without<IsDead>)>,
 ) {
-    for (entity, health) in &query {
-        if !health.is_alive() {
+    for (entity, patience) in &query {
+        if !patience.is_alive() {
             commands.entity(entity).insert(IsDead);
         }
     }
@@ -142,8 +142,8 @@ pub(super) fn plugin(app: &mut App) {
             // collision_damage_and_bounce
             //     .in_set(AppSystems::Update)
             //     .in_set(PausableSystems),
-            spawn_healthbars,
-            update_healthbars,
+            spawn_patiencebars,
+            update_patiencebars,
             (mark_dead, handle_deaths)
                 .chain()
                 .in_set(AppSystems::ResolveDeaths)
@@ -187,7 +187,7 @@ fn close_menu(mut next_menu: ResMut<NextState<Menu>>) {
     next_menu.set(Menu::None);
 }
 
-/// Any collision damages, bounces, and any side that contains `Health`
+/// Any collision damages, bounces, and any side that contains `Patience`
 ///
 /// player vs wall: Player hurt and bounces off wall
 /// Player vs Enemy: Player and Enemy hurt, both bounce appart
@@ -200,7 +200,7 @@ pub fn collision_damage_and_bounce(
     collisions: Collisions,
     mut bodies: Query<
         (
-            &mut Health,
+            &mut Patience,
             &mut Knockback,
             &mut HurtCooldown,
             Has<Invincible>,
@@ -220,11 +220,11 @@ pub fn collision_damage_and_bounce(
         }
 
         // We run logic from each side's point of view, so if both
-        // have `Health` both get hurt and bounce
+        // have `patience` both get hurt and bounce
         for (me, other) in [(a, b), (b, a)] {
-            let Ok((mut health, mut knockback, mut cooldown, invincible)) = bodies.get_mut(me)
+            let Ok((mut patience, mut knockback, mut cooldown, invincible)) = bodies.get_mut(me)
             else {
-                continue; // For when `me` has no `health` (is wall, is dead)
+                continue; // For when `me` has no `patience` (is wall, is dead)
             };
 
             // Bounces every time, even while invulnerable so no stick to walls
@@ -238,7 +238,7 @@ pub fn collision_damage_and_bounce(
             let damage = contact_damage
                 .get(other)
                 .map_or(DEFAULT_CONTACT_DAMAGE, |d| d.0);
-            health.take_damage(damage);
+            patience.take_damage(damage);
             cooldown.0 = HURT_COOLDOWN;
         }
     }
@@ -273,96 +273,96 @@ fn push_direction(
     (mine.translation().xy() - theirs.translation().xy()).normalize_or_zero()
 }
 
-/// Spawns a background + foreground healthbar pair for each entity that gains Health.
-pub fn spawn_healthbars(
+/// Spawns a background + foreground patiencebar pair for each entity that gains patience.
+pub fn spawn_patiencebars(
     mut commands: Commands,
-    new_health: Query<(Entity, &GlobalTransform, &Health), Added<Health>>,
+    new_patience: Query<(Entity, &GlobalTransform, &Patience), Added<Patience>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    for (owner, transform, health) in &new_health {
+    for (owner, transform, patience) in &new_patience {
         let pos = transform.translation();
         let bg_pos = Vec3::new(
             pos.x,
-            pos.y + HEALTHBAR_Y_OFFSET,
-            pos.z + HEALTHBAR_Z_OFFSET,
+            pos.y + PATIENCEBAR_Y_OFFSET,
+            pos.z + PATIENCEBAR_Z_OFFSET,
         );
         let fg_pos = Vec3::new(
             pos.x,
-            pos.y + HEALTHBAR_Y_OFFSET,
-            pos.z + HEALTHBAR_Z_OFFSET + HEALTHBAR_FG_Z_BUMP,
+            pos.y + PATIENCEBAR_Y_OFFSET,
+            pos.z + PATIENCEBAR_Z_OFFSET + PATIENCEBAR_FG_Z_BUMP,
         );
         // Background: dark gray
-        let bg_mesh = meshes.add(Rectangle::new(HEALTHBAR_WIDTH, HEALTHBAR_HEIGHT));
+        let bg_mesh = meshes.add(Rectangle::new(PATIENCEBAR_WIDTH, PATIENCEBAR_HEIGHT));
         let bg_mat = materials.add(ColorMaterial::from(Color::srgb(0.2, 0.2, 0.2)));
         commands.spawn((
             Mesh2d(bg_mesh),
             MeshMaterial2d(bg_mat),
             Transform::from_translation(bg_pos),
-            HealthBarOwner(owner),
+            PatienceBarOwner(owner),
         ));
-        // Foreground: color derived from actual health ratio
-        let ratio = health.h_ratio();
-        let fg_mesh = meshes.add(Rectangle::new(HEALTHBAR_WIDTH, HEALTHBAR_HEIGHT));
-        let fg_mat = materials.add(ColorMaterial::from(health_color(ratio)));
+        // Foreground: color derived from actual patience ratio
+        let ratio = patience.h_ratio();
+        let fg_mesh = meshes.add(Rectangle::new(PATIENCEBAR_WIDTH, PATIENCEBAR_HEIGHT));
+        let fg_mat = materials.add(ColorMaterial::from(patience_color(ratio)));
         commands.spawn((
             Mesh2d(fg_mesh),
             MeshMaterial2d(fg_mat),
             Transform::from_translation(fg_pos).with_scale(Vec3::new(ratio.max(0.001), 1.0, 1.0)),
-            HealthBarOwner(owner),
-            HealthBarForeground,
+            PatienceBarOwner(owner),
+            PatienceBarForeground,
         ));
     }
 }
 
 /// Each frame: repositions bars to follow owner, updates foreground width and color.
 /// Despawns bars whose owner no longer exists.
-pub fn update_healthbars(
+pub fn update_patiencebars(
     mut commands: Commands,
     mut bars: Query<(
         Entity,
-        &HealthBarOwner,
+        &PatienceBarOwner,
         &mut Transform,
-        Has<HealthBarForeground>,
+        Has<PatienceBarForeground>,
         &MeshMaterial2d<ColorMaterial>,
     )>,
-    owners: Query<(&GlobalTransform, &Health)>,
+    owners: Query<(&GlobalTransform, &Patience)>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     for (bar_entity, owner_ref, mut transform, is_foreground, mat_handle) in bars.iter_mut() {
-        let Ok((owner_transform, health)) = owners.get(owner_ref.0) else {
-            // If the owner is gone (despawned), clean up the health bar
+        let Ok((owner_transform, patience)) = owners.get(owner_ref.0) else {
+            // If the owner is gone (despawned), clean up the patience bar
             commands.entity(bar_entity).despawn();
             continue;
         };
         let owner_pos = owner_transform.translation();
-        let ratio = health.h_ratio();
+        let ratio = patience.h_ratio();
         if is_foreground {
-            // Scale foreground width to match health ratio
+            // Scale foreground width to match PATIENCE ratio
             transform.scale.x = ratio.max(0.001);
             // Reposition foreground to stay left-aligned as it shrinks
             // (Scaling happens from center, so we need to offset position)
             transform.translation = Vec3::new(
-                owner_pos.x - (HEALTHBAR_WIDTH * (1.0 - ratio) / 2.0),
-                owner_pos.y + HEALTHBAR_Y_OFFSET,
-                owner_pos.z + HEALTHBAR_Z_OFFSET + HEALTHBAR_FG_Z_BUMP,
+                owner_pos.x - (PATIENCEBAR_WIDTH * (1.0 - ratio) / 2.0),
+                owner_pos.y + PATIENCEBAR_Y_OFFSET,
+                owner_pos.z + PATIENCEBAR_Z_OFFSET + PATIENCEBAR_FG_Z_BUMP,
             );
             // Update color (Green -> Yellow -> Red)
             if let Some(mut mat) = materials.get_mut(&mat_handle.0) {
-                mat.color = health_color(ratio);
+                mat.color = patience_color(ratio);
             }
         } else {
             // Background simply stays centered above the owner
             transform.translation = Vec3::new(
                 owner_pos.x,
-                owner_pos.y + HEALTHBAR_Y_OFFSET,
-                owner_pos.z + HEALTHBAR_Z_OFFSET,
+                owner_pos.y + PATIENCEBAR_Y_OFFSET,
+                owner_pos.z + PATIENCEBAR_Z_OFFSET,
             );
         }
     }
 }
 /// Green → Yellow → Red, continuous at ratio = 0.5.
-fn health_color(ratio: f32) -> Color {
+fn patience_color(ratio: f32) -> Color {
     if ratio >= 0.5 {
         let t = (ratio - 0.5) * 2.0; // 1.0 at full, 0.0 at half
         Color::srgb(1.0 - t * 0.8, 0.8, 0.2)

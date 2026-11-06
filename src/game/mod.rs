@@ -16,6 +16,7 @@ mod movement;
 pub mod pause;
 pub mod physics;
 pub mod player;
+pub mod customer;
 pub mod progression;
 pub mod score;
 pub mod shop;
@@ -29,6 +30,7 @@ pub(super) fn plugin(app: &mut App) {
         level::plugin,
         shop::plugin,
         player::plugin,
+        customer::plugin,
         movement::plugin,
         interaction::plugin,
         physics::plugin,

@@ -19,7 +19,6 @@ use crate::{
     asset_tracking::LoadResource,
     game::{animation::PlayerAnimation, interaction::*, movement::*, physics::*, shop::YSort},
     game_manager::Screen,
-    screens::gameplay::Health,
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -29,10 +28,10 @@ pub(super) fn plugin(app: &mut App) {
         Update,
         (
             sync_atlas_size,
-            (grant_invincibility, tick_invincibility)
-                .chain()
-                .in_set(AppSystems::TickTimers)
-                .in_set(PausableSystems),
+            // (grant_invincibility, tick_invincibility)
+            //     .chain()
+            //     .in_set(AppSystems::TickTimers)
+            //     .in_set(PausableSystems),
         ),
     );
 }
@@ -77,7 +76,6 @@ pub fn tick_invincibility(
 
 /// The stats an attribute for each kind of player.
 pub struct PlayerStats {
-    pub health: f32,
     pub speed: f32,
     pub scale: f32,
     pub color: Color,
@@ -127,7 +125,6 @@ impl PlayerKind {
     pub fn player_stats(self) -> PlayerStats {
         match self {
             PlayerKind::OrdinaryWitch => PlayerStats {
-                health: 100.0,
                 speed: 1000.0,
                 scale: 0.75,
                 color: Color::srgb(1.0, 0.5, 0.5),
@@ -149,7 +146,6 @@ pub fn player_base_scene(kind: PlayerKind) -> impl Scene {
         speed: stats.speed,
         ..default()
     };
-    let health = Health::new(stats.health);
     let collider = Collider::circle(stats.collider_rad);
     let layers = GameLayer::player_layers();
     let despawn = DespawnOnExit(Screen::Gameplay);
@@ -158,7 +154,6 @@ pub fn player_base_scene(kind: PlayerKind) -> impl Scene {
         Name::new("Player")
         Player
         kind
-        health
         RigidBody::Dynamic
         collider
         LockedAxes::ROTATION_LOCKED
