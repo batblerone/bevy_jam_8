@@ -4,11 +4,14 @@ use crate::game::data::{AlchemyDatabase, IngredientKind, Potion};
 use crate::game_manager::{GamePhase, NightTickEvent};
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(Update, (
-        Cauldron::on_brew_tick.run_if(in_state(GamePhase::Night)),
-        sync_cauldron_visuals,
-        animate_cauldron_sprites,
-    ));
+    app.add_systems(
+        Update,
+        (
+            Cauldron::on_brew_tick.run_if(in_state(GamePhase::Night)),
+            sync_cauldron_visuals,
+            animate_cauldron_sprites,
+        ),
+    );
 }
 
 #[derive(Component, Debug, Clone)]
@@ -80,7 +83,7 @@ impl Cauldron {
         if !self.is_brewing {
             self.ingredients.clear();
             self.reset_brewing();
-        }        
+        }
     }
 
     pub fn start_brewing(&mut self) {
@@ -91,7 +94,10 @@ impl Cauldron {
     }
 
     pub fn complete_brew(&mut self, alchemy_database: &AlchemyDatabase) {
-        println!("Cauldron (station_id: {}) completed brewing with ingredients: {:?}", self.station_id, self.ingredients);
+        println!(
+            "Cauldron (station_id: {}) completed brewing with ingredients: {:?}",
+            self.station_id, self.ingredients
+        );
         self.brewed_potion = alchemy_database
             .find_potion_by_ingredients(&self.ingredients)
             .cloned();
@@ -128,9 +134,7 @@ impl Cauldron {
         self.is_locked = false;
     }
 
-    pub fn cauldron_interact(&mut self) {
-        
-    }
+    pub fn cauldron_interact(&mut self) {}
 }
 
 #[derive(Component, Debug, Default)]

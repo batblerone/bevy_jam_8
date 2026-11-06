@@ -12,7 +12,8 @@ use crate::{
         interaction::{Interactable, Interacted, InteractedWithNothing},
         movement::MovementIntent,
         physics::GameLayer,
-        shop::{self, Station, StationKind, YSort, z},
+        shop::{self, YSort, z},
+        stations::{Station, StationKind},
     },
     game_manager::Screen,
 };

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="60" height="50" tilewidth="128" tileheight="128" infinite="0" nextlayerid="22" nextobjectid="1">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="60" height="50" tilewidth="128" tileheight="128" infinite="0" nextlayerid="23" nextobjectid="147">
  <tileset firstgid="1" source="_SpriteSheet.tsx"/>
  <layer id="8" name="Floor" width="60" height="50" locked="1">
   <data encoding="csv">
@@ -285,7 +285,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,401,402,0,0,401,402,0,0,401,402,0,0,0,401,402,0,0,401,402,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,321,0,0,0,0,0,0,0,0,0,0,321,0,0,0,0,0,0,0,0,0,0,321,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,385,386,0,0,385,386,0,0,0,385,386,0,0,385,386,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,401,402,0,0,401,402,0,0,0,401,402,0,0,401,402,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,385,386,0,0,385,386,0,0,0,385,386,0,0,385,386,
@@ -325,6 +325,245 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
+ <objectgroup id="22" name="StationSpawners">
+  <object id="1" name="Station:Cauldron" x="882.891" y="1497.08">
+   <point/>
+  </object>
+  <object id="2" name="Station:Cauldron" x="2295.52" y="1543.14">
+   <point/>
+  </object>
+  <object id="3" name="Station:Cauldron" x="3708.14" y="1535.46">
+   <point/>
+  </object>
+  <object id="5" name="Station:GrowBed" x="5381.8" y="621.862">
+   <point/>
+  </object>
+  <object id="6" name="Station:GrowBed" x="5381.8" y="621.862">
+   <point/>
+  </object>
+  <object id="11" name="Station:GrowBed" x="5374.12" y="875.214">
+   <point/>
+  </object>
+  <object id="20" name="Station:GrowBed" x="5358.76" y="1143.92">
+   <point/>
+  </object>
+  <object id="75" name="Station:GrowBed" x="5896.18" y="652.572">
+   <point/>
+  </object>
+  <object id="76" name="Station:GrowBed" x="5900" y="916">
+   <point/>
+  </object>
+  <object id="77" name="Station:GrowBed" x="5896" y="1156">
+   <point/>
+  </object>
+  <object id="78" name="Station:GrowBed" x="6416" y="636">
+   <point/>
+  </object>
+  <object id="79" name="Station:GrowBed" x="6408" y="912">
+   <point/>
+  </object>
+  <object id="80" name="Station:GrowBed" x="6404" y="1164">
+   <point/>
+  </object>
+  <object id="81" name="Station:GrowBed" x="7044" y="644">
+   <point/>
+  </object>
+  <object id="82" name="Station:GrowBed" x="7044" y="912">
+   <point/>
+  </object>
+  <object id="83" name="Station:GrowBed" x="7044" y="1160">
+   <point/>
+  </object>
+  <object id="84" name="Station:GrowBed" x="7548" y="640">
+   <point/>
+  </object>
+  <object id="85" name="Station:GrowBed" x="7548" y="904">
+   <point/>
+  </object>
+  <object id="86" name="Station:GrowBed" x="7564" y="1172">
+   <point/>
+  </object>
+  <object id="87" name="Station:GrowBed" x="5900" y="1808">
+   <point/>
+  </object>
+  <object id="88" name="Station:GrowBed" x="6408" y="1788">
+   <point/>
+  </object>
+  <object id="89" name="Station:GrowBed" x="7044" y="1792">
+   <point/>
+  </object>
+  <object id="90" name="Station:GrowBed" x="7544" y="1804">
+   <point/>
+  </object>
+  <object id="91" name="Station:GrowBed" x="7560" y="2052">
+   <point/>
+  </object>
+  <object id="92" name="Station:GrowBed" x="7052" y="2068">
+   <point/>
+  </object>
+  <object id="93" name="Station:GrowBed" x="6408" y="2052">
+   <point/>
+  </object>
+  <object id="94" name="Station:GrowBed" x="5888" y="2052">
+   <point/>
+  </object>
+  <object id="95" name="Station:GrowBed" x="5892" y="2312">
+   <point/>
+  </object>
+  <object id="96" name="Station:GrowBed" x="6404" y="2304">
+   <point/>
+  </object>
+  <object id="97" name="Station:GrowBed" x="7044" y="2312">
+   <point/>
+  </object>
+  <object id="98" name="Station:GrowBed" x="7560" y="2320">
+   <point/>
+  </object>
+  <object id="99" name="Station:GrowBed" x="5376" y="2956">
+   <point/>
+  </object>
+  <object id="100" name="Station:GrowBed" x="5888" y="2944">
+   <point/>
+  </object>
+  <object id="101" name="Station:GrowBed" x="6384" y="2952">
+   <point/>
+  </object>
+  <object id="102" name="Station:GrowBed" x="7048" y="2952">
+   <point/>
+  </object>
+  <object id="103" name="Station:GrowBed" x="7548" y="2944">
+   <point/>
+  </object>
+  <object id="104" name="Station:GrowBed" x="7556" y="3224">
+   <point/>
+  </object>
+  <object id="105" name="Station:GrowBed" x="7060" y="3216">
+   <point/>
+  </object>
+  <object id="106" name="Station:GrowBed" x="6392" y="3216">
+   <point/>
+  </object>
+  <object id="107" name="Station:GrowBed" x="5884" y="3220">
+   <point/>
+  </object>
+  <object id="108" name="Station:GrowBed" x="5372" y="3216">
+   <point/>
+  </object>
+  <object id="109" name="Station:GrowBed" x="5396" y="3468">
+   <point/>
+  </object>
+  <object id="110" name="Station:GrowBed" x="5900" y="3476">
+   <point/>
+  </object>
+  <object id="111" name="Station:GrowBed" x="6400" y="3460">
+   <point/>
+  </object>
+  <object id="112" name="Station:GrowBed" x="7044" y="3468">
+   <point/>
+  </object>
+  <object id="113" name="Station:GrowBed" x="7552" y="3480">
+   <point/>
+  </object>
+  <object id="114" name="Station:GrowBed" x="5372" y="4104">
+   <point/>
+  </object>
+  <object id="115" name="Station:GrowBed" x="5376" y="4368">
+   <point/>
+  </object>
+  <object id="116" name="Station:GrowBed" x="5380" y="4616">
+   <point/>
+  </object>
+  <object id="117" name="Station:GrowBed" x="5888" y="4108">
+   <point/>
+  </object>
+  <object id="118" name="Station:GrowBed" x="5896" y="4364">
+   <point/>
+  </object>
+  <object id="119" name="Station:GrowBed" x="5892" y="4620">
+   <point/>
+  </object>
+  <object id="120" name="Station:GrowBed" x="6404" y="4108">
+   <point/>
+  </object>
+  <object id="121" name="Station:GrowBed" x="6408" y="4356">
+   <point/>
+  </object>
+  <object id="122" name="Station:GrowBed" x="6396" y="4616">
+   <point/>
+  </object>
+  <object id="123" name="Station:GrowBed" x="7040" y="4108">
+   <point/>
+  </object>
+  <object id="124" name="Station:GrowBed" x="7048" y="4368">
+   <point/>
+  </object>
+  <object id="125" name="Station:GrowBed" x="7032" y="4616">
+   <point/>
+  </object>
+  <object id="126" name="Station:GrowBed" x="7548" y="4108">
+   <point/>
+  </object>
+  <object id="127" name="Station:GrowBed" x="7564" y="4376">
+   <point/>
+  </object>
+  <object id="128" name="Station:GrowBed" x="7564" y="4612">
+   <point/>
+  </object>
+  <object id="129" name="Station:GrowBed" x="5892" y="5260">
+   <point/>
+  </object>
+  <object id="130" name="Station:GrowBed" x="5904" y="5520">
+   <point/>
+  </object>
+  <object id="131" name="Station:GrowBed" x="5896" y="5776">
+   <point/>
+  </object>
+  <object id="132" name="Station:GrowBed" x="6404" y="5276">
+   <point/>
+  </object>
+  <object id="133" name="Station:GrowBed" x="6408" y="5516">
+   <point/>
+  </object>
+  <object id="134" name="Station:GrowBed" x="6408" y="5776">
+   <point/>
+  </object>
+  <object id="135" name="Station:GrowBed" x="7044" y="5272">
+   <point/>
+  </object>
+  <object id="136" name="Station:GrowBed" x="7044" y="5512">
+   <point/>
+  </object>
+  <object id="137" name="Station:GrowBed" x="7052" y="5760">
+   <point/>
+  </object>
+  <object id="138" name="Station:GrowBed" x="7556" y="5260">
+   <point/>
+  </object>
+  <object id="139" name="Station:GrowBed" x="7556" y="5508">
+   <point/>
+  </object>
+  <object id="140" name="Station:GrowBed" x="7564" y="5764">
+   <point/>
+  </object>
+  <object id="141" name="PlayerSpawn" x="1976" y="4152">
+   <point/>
+  </object>
+  <object id="142" name="Station:Crate" x="3320" y="1520">
+   <point/>
+  </object>
+  <object id="143" name="Station:Crate" x="2824" y="1496">
+   <point/>
+  </object>
+  <object id="144" name="Station:Crate" x="624" y="864">
+   <point/>
+  </object>
+  <object id="145" name="Station:Crate" x="256" y="720">
+   <point/>
+  </object>
+  <object id="146" name="Station:ServiceCounter" x="1984" y="4424">
+   <point/>
+  </object>
+ </objectgroup>
  <layer id="16" name="ObjectLayer2" width="60" height="50">
   <data encoding="csv">
 11,12,11,12,11,12,11,12,9,10,11,12,11,12,11,12,11,12,11,12,9,10,11,12,11,12,11,12,11,12,11,12,9,10,11,12,11,12,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,

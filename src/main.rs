@@ -52,6 +52,7 @@ impl Plugin for AppPlugin {
         app.add_plugins(PhysicsPlugins::default());
         // Initialize the movement plugins
         app.add_plugins(EnhancedInputPlugin);
+        // Initialize tile map plugin
 
         // Initialize the game manager before other custom plugins
         app.add_plugins(game_manager::plugin);

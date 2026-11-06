@@ -36,6 +36,7 @@ pub(super) fn plugin(app: &mut App) {
         animation::plugin,
         items::plugin,
         pause::plugin,
+        stations::plugin,
         user_interface::plugin,
     ));
 }
