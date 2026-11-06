@@ -45,7 +45,12 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnExit(Screen::Gameplay), restore_camera);
     app.add_systems(
         Update,
-        (configure_tiled_colliders, follow_player_camera).run_if(in_state(Screen::Gameplay)),
+        (
+            configure_tiled_colliders,
+            hide_collision_layer,
+            follow_player_camera,
+        )
+            .run_if(in_state(Screen::Gameplay)),
     );
     // Read marker GlobalTransforms only AFTER Tiled's nested transforms are
     // propagated. Entities spawned by these systems appear the next frame.
@@ -148,6 +153,15 @@ fn configure_tiled_colliders(
         commands
             .entity(event.origin)
             .try_insert((RigidBody::Static, GameLayer::wall_layers()));
+    }
+}
+
+/// Hide the collision layer so that it is not there but there
+pub fn hide_collision_layer(mut layers: Query<(&TiledName, &mut Visibility), Added<TiledLayer>>) {
+    for (name, mut visibility) in &mut layers {
+        if name.0 == "Collision" {
+            *visibility = Visibility::Hidden;
+        }
     }
 }
 
