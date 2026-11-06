@@ -201,7 +201,6 @@ pub fn stations_base_scene(kind: StationKind) -> impl Scene {
     let collider = Collider::rectangle(size.x, size.y);
     let layers = GameLayer::station_layers();
     let station = Station { kind };
-    let despawn = DespawnOnExit(Screen::Gameplay);
 
     bsn! {
         Name::new(spec.name)
@@ -212,7 +211,7 @@ pub fn stations_base_scene(kind: StationKind) -> impl Scene {
         RigidBody::Static
         collider
         layers
-        despawn
+        DespawnOnExit(Screen::Gameplay)
     }
 }
 
