@@ -143,7 +143,7 @@ impl StationKind {
                 "Cauldron",
                 "Brew",
                 srgb(0.25, 0.25, 0.30),
-                Vec2::splat(0.9),
+                Vec2::new(512.0, 512.0),
                 1.0,
             ),
             StationKind::Bed => ("Bed", "Bed", srgb(0.55, 0.35, 0.65), Vec2::ONE, 1.0),
@@ -154,7 +154,13 @@ impl StationKind {
                 Vec2::splat(0.7),
                 1.0,
             ),
-            StationKind::GrowBed => ("Grow Bed", "Grow", srgb(0.30, 0.55, 0.25), Vec2::ONE, 1.0),
+            StationKind::GrowBed => (
+                "Grow Bed",
+                "Grow",
+                srgb(0.30, 0.55, 0.25),
+                Vec2::new(256.0, 256.0),
+                1.0,
+            ),
         };
         StationSpec {
             name,
@@ -173,6 +179,13 @@ impl StationKind {
                 rows: 1,
                 padding: 0,
                 offset: UVec2::new(1536, 2688),
+            },
+            StationKind::GrowBed => StationSpriteSheet {
+                frame_size: UVec2::splat(256),
+                columns: 1,
+                rows: 1,
+                padding: 0,
+                offset: UVec2::new(0, 3072),
             },
             _ => StationSpriteSheet {
                 frame_size: UVec2::splat(32),
@@ -193,11 +206,8 @@ const fn srgb(r: f32, g: f32, b: f32) -> Color {
 /// target this entity through `Interactable` and its Avian collider.
 pub fn stations_base_scene(kind: StationKind) -> impl Scene {
     let spec = kind.spec();
-    // The station art still uses the original ~32px footprint even though the
-    // Tiled map cells are now 128px. Preserve that gameplay collision size,
-    // compensating for the root sprite scale (notably Cauldron's 0.08).
-    let size = spec.size * 32.0 * 1.2 / spec.scale;
-    let collider = Collider::rectangle(size.x, size.y);
+    let size = spec.size * spec.scale;
+    let collider = Collider::rectangle(size.x * 0.75, size.y * 0.75);
     let layers = GameLayer::station_layers();
     let station = Station { kind };
     let despawn = DespawnOnExit(Screen::Gameplay);
