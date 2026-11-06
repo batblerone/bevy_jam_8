@@ -16,8 +16,8 @@ pub mod cauldron;
 pub(super) fn plugin(app: &mut App) {
     app.load_resource::<StationAssets>();
     app.add_plugins(cauldron::plugin);
-    app.register_type::<StationKind>();
-    app.register_type::<Station>();
+    app.register_type::<StationKind>()
+        .register_type::<Station>();
     app.add_systems(
         Update,
         sync_atlas_size.run_if(resource_changed::<StationAssets>),
