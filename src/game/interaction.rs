@@ -35,7 +35,7 @@ pub struct InteractionReach(pub f32);
 
 impl Default for InteractionReach {
     fn default() -> Self {
-        Self(40.0)
+        Self(200.0)
     }
 }
 

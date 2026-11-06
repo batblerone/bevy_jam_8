@@ -21,13 +21,9 @@ use std::fmt;
 
 use avian2d::prelude::*;
 use bevy::{camera::ScalingMode, prelude::*, transform::TransformSystems};
-use bevy_egui::egui::epaint::tessellator::path;
 
 use crate::{
-    MainCamera,
-    game::stations::cauldron::*,
-    game::{physics::GameLayer, player::Player},
-    game_manager::{RunSetup, Screen},
+    MainCamera, game::{interaction::Interactable, physics::GameLayer, player::Player, stations::cauldron::*}, game_manager::{RunSetup, Screen},
 };
 
 /// Size of one grid cell in world units.
@@ -677,6 +673,7 @@ pub fn spawn_shop(
                     },
                     YSort,
                     GameLayer::station_layers(),
+                    Interactable,
                     RigidBody::Static,
                     Collider::rectangle(spec.size.x * TILE_SIZE * 1.2 / spec.scale, spec.size.y * TILE_SIZE * 1.2 / spec.scale),
                     ChildOf(root),
