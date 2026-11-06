@@ -21,6 +21,7 @@ use std::fmt;
 
 use avian2d::prelude::*;
 use bevy::{camera::ScalingMode, prelude::*, transform::TransformSystems};
+use bevy_egui::egui::epaint::tessellator::path;
 
 use crate::{
     MainCamera,
@@ -203,6 +204,16 @@ pub struct StationSpec {
     /// Footprint in tiles. Also the collider size. Counters fill their tile
     /// completely so a row of them forms a solid, seamless barrier.
     pub size: Vec2,
+    pub scale: f32,
+}
+
+/// The sprite sheet for a station. The loader uses this to build a `TextureAtlas`.
+pub struct StationSpriteSheet {
+    pub frame_size: UVec2,
+    pub columns: u32,
+    pub rows: u32,
+    pub padding: UVec2,
+    pub offset: UVec2,
 }
 
 impl StationKind {
@@ -222,43 +233,73 @@ impl StationKind {
     ];
 
     pub fn spec(self) -> StationSpec {
-        let (name, label, color, size) = match self {
-            StationKind::Counter => ("Counter", "", srgb(0.55, 0.36, 0.22), Vec2::ONE),
+        let (name, label, color, size, scale) = match self {
+            StationKind::Counter => ("Counter", "", srgb(0.55, 0.36, 0.22), Vec2::ONE, 1.0),
             StationKind::ServiceCounter => (
                 "Service Counter",
                 "Serve",
                 srgb(0.85, 0.65, 0.20),
                 Vec2::ONE,
+                1.0,
             ),
             StationKind::Crate => (
                 "Ingredient Crate",
                 "Crate",
                 srgb(0.70, 0.50, 0.30),
                 Vec2::splat(0.9),
+                1.0,
             ),
             StationKind::FlaskShelf => (
                 "Flask Shelf",
                 "Flask",
                 srgb(0.45, 0.75, 0.85),
                 Vec2::splat(0.9),
+                1.0,
             ),
-            StationKind::Mortar => ("Mortar", "Mortar", srgb(0.60, 0.60, 0.65), Vec2::splat(0.7)),
+            StationKind::Mortar => ("Mortar", "Mortar", srgb(0.60, 0.60, 0.65), Vec2::splat(0.7), 1.0),
             StationKind::DryingRack => (
                 "Drying Rack",
                 "Dry",
                 srgb(0.65, 0.55, 0.30),
                 Vec2::splat(0.9),
+                1.0,
             ),
-            StationKind::Cauldron => ("Cauldron", "Brew", srgb(0.25, 0.25, 0.30), Vec2::splat(0.9)),
-            StationKind::Bed => ("Bed", "Bed", srgb(0.55, 0.35, 0.65), Vec2::ONE),
-            StationKind::Trash => ("Trash", "Trash", srgb(0.35, 0.40, 0.35), Vec2::splat(0.7)),
-            StationKind::GrowBed => ("Grow Bed", "Grow", srgb(0.30, 0.55, 0.25), Vec2::ONE),
+            StationKind::Cauldron => (
+                "Cauldron",
+                "Brew",
+                srgb(0.25, 0.25, 0.30),
+                Vec2::splat(0.9),
+                0.08,
+            ),
+            StationKind::Bed => ("Bed", "Bed", srgb(0.55, 0.35, 0.65), Vec2::ONE, 1.0),
+            StationKind::Trash => ("Trash", "Trash", srgb(0.35, 0.40, 0.35), Vec2::splat(0.7), 1.0),
+            StationKind::GrowBed => ("Grow Bed", "Grow", srgb(0.30, 0.55, 0.25), Vec2::ONE, 1.0),
         };
         StationSpec {
             name,
             label,
             color,
             size,
+            scale
+        }
+    }
+
+    pub fn sprite_sheet(self) -> StationSpriteSheet {
+        match self {
+            StationKind::Cauldron => StationSpriteSheet {
+                frame_size: UVec2::splat(512),
+                columns: 1,
+                rows: 1,
+                padding: UVec2::ZERO,
+                offset: UVec2::new(1536, 2688),
+            },
+            _ => StationSpriteSheet {
+                frame_size: UVec2::splat(32),
+                columns: 1,
+                rows: 1,
+                padding: UVec2::ZERO,
+                offset: UVec2::ZERO,
+            }
         }
     }
 }
@@ -574,7 +615,12 @@ pub fn station(kind: StationKind) -> impl Bundle {
 
 /// Spawns the whole room from [`ShopLayout`]. Runs on entering gameplay, after
 /// [`RunSetup`], and is cleaned up by `DespawnOnExit` on the root.
-pub fn spawn_shop(mut commands: Commands, layout: Res<ShopLayout>) {
+pub fn spawn_shop(
+    mut commands: Commands,
+    layout: Res<ShopLayout>,
+    asset_server: Res<AssetServer>,
+    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+) {
     let root = commands
         .spawn((
             Name::new("Shop"),
@@ -615,23 +661,35 @@ pub fn spawn_shop(mut commands: Commands, layout: Res<ShopLayout>) {
         let pos = layout.tile_to_world(tile).extend(z::WORLD);
         match kind {
             Tile::Station(kind) => {
+                let sprite_sheet = kind.sprite_sheet();
+                let spec = kind.spec();
+
+                let mut station_builder = commands.spawn((
+                    Name::new(format!("{:?}{station_id}", kind.spec().name)),
+                    Transform::from_translation(pos).with_scale(Vec3::splat(spec.scale)),
+                    Sprite {
+                        image: asset_server.load("images/SpriteSheet.png"),
+                        texture_atlas: Some(TextureAtlas {
+                            layout: texture_atlas_layouts.add(TextureAtlasLayout::from_grid(sprite_sheet.frame_size, sprite_sheet.columns, sprite_sheet.rows, Some(sprite_sheet.padding), Some(sprite_sheet.offset))).into(),
+                            index: 1,
+                        }),
+                        ..default()
+                    },
+                    YSort,
+                    GameLayer::station_layers(),
+                    RigidBody::Static,
+                    Collider::rectangle(spec.size.x * TILE_SIZE * 1.2 / spec.scale, spec.size.y * TILE_SIZE * 1.2 / spec.scale),
+                    ChildOf(root),
+                ));
+
                 match kind {
                     StationKind::Cauldron => {
-                        commands.spawn((
-                            Name::new(format!("Cauldron{station_id}")),
-                            Cauldron::new(station_id),
-                            Transform::from_translation(pos),
-                            ChildOf(root),
-                        ));
+                        station_builder.insert(Cauldron::new(station_id));
+                        station_builder.insert(CauldronAnimation::default());
                     }
-                    _ => {
-                        commands.spawn((
-                            station(kind),
-                            Transform::from_translation(pos),
-                            ChildOf(root),
-                        ));
-                    }
+                    _ => {} // Do nothing for other variants
                 }
+                
 
                 station_id += 1;
             }

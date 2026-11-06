@@ -4,7 +4,11 @@ use crate::game::data::{AlchemyDatabase, IngredientKind, Potion};
 use crate::game_manager::{GamePhase, NightTickEvent};
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(Update, Cauldron::on_brew_tick.run_if(in_state(GamePhase::Night)));
+    app.add_systems(Update, (
+        Cauldron::on_brew_tick.run_if(in_state(GamePhase::Night)),
+        sync_cauldron_visuals,
+        animate_cauldron_sprites,
+    ));
 }
 
 #[derive(Component, Debug, Clone)]
@@ -126,5 +130,73 @@ impl Cauldron {
 
     pub fn cauldron_interact(&mut self) {
         
+    }
+}
+
+#[derive(Component, Debug, Default)]
+pub struct CauldronAnimation {
+    pub timer: Timer,
+    pub first_frame: usize,
+    pub last_frame: usize,
+}
+
+impl CauldronAnimation {
+    pub fn default() -> Self {
+        Self {
+            timer: Timer::from_seconds(0.1, TimerMode::Repeating),
+            first_frame: 0,
+            last_frame: 0,
+        }
+    }
+}
+
+fn sync_cauldron_visuals(
+    mut query: Query<(&Cauldron, &mut CauldronAnimation, &mut Sprite), Changed<Cauldron>>,
+) {
+    for (cauldron, mut anim, mut sprite) in query.iter_mut() {
+        let (first, last, speed) = if cauldron.is_locked {
+            (0, 0, 0.1) // Locked frame
+        } else if cauldron.is_broken {
+            (1, 1, 0.1) // Broken frame
+        } else if cauldron.is_brewing {
+            (4, 7, 0.15) // Brewing animation frame indices 4 through 7
+        } else if !cauldron.ingredients.is_empty() {
+            (2, 3, 0.2) // Filling / filled animation loop
+        } else {
+            (0, 0, 0.1) // Default Idle
+        };
+
+        // If the animation state changed, reset the indices and timer
+        if anim.first_frame != first || anim.last_frame != last {
+            anim.first_frame = first;
+            anim.last_frame = last;
+            anim.timer = Timer::from_seconds(speed, TimerMode::Repeating);
+            if let Some(ref mut atlas) = sprite.texture_atlas {
+                atlas.index = first;
+            }
+        }
+    }
+}
+
+fn animate_cauldron_sprites(
+    time: Res<Time>,
+    mut query: Query<(&mut CauldronAnimation, &mut Sprite)>,
+) {
+    for (mut anim, mut sprite) in query.iter_mut() {
+        // Skip updating static icons/frames
+        if anim.first_frame == anim.last_frame {
+            continue;
+        }
+
+        anim.timer.tick(time.delta());
+        if anim.timer.just_finished() {
+            if let Some(ref mut atlas) = sprite.texture_atlas {
+                if atlas.index >= anim.last_frame {
+                    atlas.index = anim.first_frame;
+                } else {
+                    atlas.index += 1;
+                }
+            }
+        }
     }
 }
