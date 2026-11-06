@@ -249,9 +249,6 @@ pub struct StationAssets {
     /// One atlas layout per kind, in the same order. Built in code
     /// with `Assets::add`, not loaded so no #[dependency]
     layouts: Vec<Handle<TextureAtlasLayout>>,
-    /// The steps used in animation, this is legacy from bevy_template_2d, but may find use elsewhere.
-    #[dependency]
-    pub steps: Vec<Handle<AudioSource>>,
     /// For debug and primitives construction
     pub debug_mesh: Vec<Handle<Mesh>>,
     pub debug_material: Vec<Handle<ColorMaterial>>,
@@ -342,12 +339,6 @@ impl FromWorld for StationAssets {
         Self {
             sheets,
             layouts,
-            steps: vec![
-                assets.load("audio/sound_effects/step1.ogg"),
-                assets.load("audio/sound_effects/step2.ogg"),
-                assets.load("audio/sound_effects/step3.ogg"),
-                assets.load("audio/sound_effects/step4.ogg"),
-            ],
             debug_mesh,
             debug_material,
         }
