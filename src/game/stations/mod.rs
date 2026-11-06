@@ -330,17 +330,14 @@ impl FromWorld for StationAssets {
 
         let assets = world.resource::<AssetServer>();
 
-        let sheets = StationKind::ALL
-            .iter()
-            .map(|kind| {
-                assets
-                    .load_builder()
-                    .with_settings(|settings: &mut ImageLoaderSettings| {
-                        settings.sampler = ImageSampler::nearest();
-                    })
-                    .load("images/SpriteSheet.png")
+        let sheet = assets
+            .load_builder()
+            .with_settings(|settings: &mut ImageLoaderSettings| {
+                settings.sampler = ImageSampler::nearest();
             })
-            .collect();
+            .load("images/SpriteSheet.png");
+
+        let sheets: Vec<Handle<Image>> = StationKind::ALL.iter().map(|_| sheet.clone()).collect();
 
         Self {
             sheets,
