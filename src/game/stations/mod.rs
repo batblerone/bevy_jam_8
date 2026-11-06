@@ -12,14 +12,12 @@ use crate::{
 };
 
 pub mod cauldron;
-pub mod grow_bed;
 
 pub(super) fn plugin(app: &mut App) {
     app.load_resource::<StationAssets>();
     app.add_plugins(cauldron::plugin);
-<<<<<<< HEAD
-    app.register_type::<StationKind>();
-    app.register_type::<Station>();
+    app.register_type::<StationKind>()
+        .register_type::<Station>();
     app.add_systems(
         Update,
         sync_atlas_size.run_if(resource_changed::<StationAssets>),
@@ -203,7 +201,6 @@ pub fn stations_base_scene(kind: StationKind) -> impl Scene {
     let collider = Collider::rectangle(size.x, size.y);
     let layers = GameLayer::station_layers();
     let station = Station { kind };
-    let despawn = DespawnOnExit(Screen::Gameplay);
 
     bsn! {
         Name::new(spec.name)
@@ -214,7 +211,7 @@ pub fn stations_base_scene(kind: StationKind) -> impl Scene {
         RigidBody::Static
         collider
         layers
-        despawn
+        DespawnOnExit(Screen::Gameplay)
     }
 }
 
@@ -383,7 +380,4 @@ fn sync_atlas_size(
             layout.size = image_size;
         }
     }
-=======
-    app.add_plugins(grow_bed::plugin);
->>>>>>> fe4f6aacd26d3a92c61e97f1eb388f615984abc8
 }
