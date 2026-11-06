@@ -53,9 +53,9 @@ pub enum IngredientKind {
 }
 
 /// Contains data regarding a single ingredient asset.
-#[derive(Debug, Clone)]
+#[derive(Component, Debug, Clone)]
 pub struct Ingredient {
-    pub id: IngredientKind,
+    pub kind: IngredientKind,
     pub name: &'static str,
     pub icon_path: PathBuf,
 }
@@ -65,16 +65,16 @@ impl Ingredient {
     pub fn get_effect_by_slot_index(&self, index: usize) -> Option<IngredientEffect> {
         match index {
         0 => unsafe {
-            Some(IngredientEffect::Base(std::mem::transmute(self.id as u8)))
+            Some(IngredientEffect::Base(std::mem::transmute(self.kind as u8)))
         },
         1 => unsafe {
-            Some(IngredientEffect::Modifier(std::mem::transmute(self.id as u8)))
+            Some(IngredientEffect::Modifier(std::mem::transmute(self.kind as u8)))
         },
         2 => unsafe {
-            Some(IngredientEffect::Utility(std::mem::transmute(self.id as u8)))
+            Some(IngredientEffect::Utility(std::mem::transmute(self.kind as u8)))
         },
         3 => unsafe {
-            Some(IngredientEffect::Delivery(std::mem::transmute(self.id as u8)))
+            Some(IngredientEffect::Delivery(std::mem::transmute(self.kind as u8)))
         },
         _ => None,
         }
@@ -110,17 +110,17 @@ impl AlchemyDatabase {
         Self {
             ingredients: vec![
                 Ingredient {
-                    id: IngredientKind::Fireweed,
+                    kind: IngredientKind::Fireweed,
                     name: "Fireweed",
                     icon_path: PathBuf::from("assets/icons/ingredients/fireweed.png"),
                 },
                 Ingredient {
-                    id: IngredientKind::Silkworm,
+                    kind: IngredientKind::Silkworm,
                     name: "Silkworm",
                     icon_path: PathBuf::from("assets/icons/ingredients/silkworm.png"),
                 },
                 Ingredient {
-                    id: IngredientKind::Glowcap,
+                    kind: IngredientKind::Glowcap,
                     name: "Glowcap",
                     icon_path: PathBuf::from("assets/icons/ingredients/glowcap.png"),
                 },
@@ -161,7 +161,7 @@ impl AlchemyDatabase {
     }
 
     pub fn find_ingredient(&self, id: IngredientKind) -> Option<&Ingredient> {
-        self.ingredients.iter().find(|i| i.id == id)
+        self.ingredients.iter().find(|i| i.kind == id)
     }
 
     pub fn find_potion_by_recipe(&self, recipe: &Recipe) -> Option<&Potion> {

@@ -7,6 +7,7 @@
 
 use avian2d::prelude::*;
 use bevy::{camera::ScalingMode, prelude::*, transform::TransformSystems};
+<<<<<<< HEAD
 use bevy_ecs_tiled::prelude::*;
 
 use crate::{
@@ -21,6 +22,11 @@ use crate::{
         },
     },
     game_manager::{RunSetup, Screen},
+=======
+
+use crate::{
+    MainCamera, game::{interaction::Interactable, physics::GameLayer, player::Player, stations::cauldron::*}, game_manager::{RunSetup, Screen},
+>>>>>>> fe4f6aacd26d3a92c61e97f1eb388f615984abc8
 };
 
 /// Current tile size in ShopMap.tmx. Also used as the station footprint unit.
@@ -205,6 +211,7 @@ fn spawn_tiled_objects(
 
         let position = transform.translation().xy();
         match kind {
+<<<<<<< HEAD
             MarkerKind::Station(kind) => {
                 // The loading screen should make StationAssets available. If
                 // not, leave this marker unhandled and retry next frame.
@@ -219,6 +226,29 @@ fn spawn_tiled_objects(
                         .with_scale(Vec3::splat(scale)),
                     ChildOf(*shop),
                     FromTiledMarker(marker),
+=======
+            Tile::Station(kind) => {
+                let sprite_sheet = kind.sprite_sheet();
+                let spec = kind.spec();
+
+                let mut station_builder = commands.spawn((
+                    Name::new(format!("{:?}{station_id}", kind.spec().name)),
+                    Transform::from_translation(pos).with_scale(Vec3::splat(spec.scale)),
+                    Sprite {
+                        image: asset_server.load("images/SpriteSheet.png"),
+                        texture_atlas: Some(TextureAtlas {
+                            layout: texture_atlas_layouts.add(TextureAtlasLayout::from_grid(sprite_sheet.frame_size, sprite_sheet.columns, sprite_sheet.rows, Some(sprite_sheet.padding), Some(sprite_sheet.offset))).into(),
+                            index: 1,
+                        }),
+                        ..default()
+                    },
+                    YSort,
+                    GameLayer::station_layers(),
+                    Interactable,
+                    RigidBody::Static,
+                    Collider::rectangle(spec.size.x * TILE_SIZE * 1.2 / spec.scale, spec.size.y * TILE_SIZE * 1.2 / spec.scale),
+                    ChildOf(root),
+>>>>>>> fe4f6aacd26d3a92c61e97f1eb388f615984abc8
                 ));
                 if kind == StationKind::Cauldron {
                     station.insert((Cauldron::new(id.0), CauldronAnimation::default()));

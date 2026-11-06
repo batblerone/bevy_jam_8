@@ -12,10 +12,12 @@ use crate::{
 };
 
 pub mod cauldron;
+pub mod grow_bed;
 
 pub(super) fn plugin(app: &mut App) {
     app.load_resource::<StationAssets>();
     app.add_plugins(cauldron::plugin);
+<<<<<<< HEAD
     app.register_type::<StationKind>();
     app.register_type::<Station>();
     app.add_systems(
@@ -381,4 +383,7 @@ fn sync_atlas_size(
             layout.size = image_size;
         }
     }
+=======
+    app.add_plugins(grow_bed::plugin);
+>>>>>>> fe4f6aacd26d3a92c61e97f1eb388f615984abc8
 }
