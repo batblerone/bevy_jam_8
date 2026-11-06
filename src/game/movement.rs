@@ -58,7 +58,7 @@ impl Default for MovementController {
     fn default() -> Self {
         Self {
             speed: 0.0,
-            sprint_x: 1.75,
+            sprint_x: 3.0,
         }
     }
 }

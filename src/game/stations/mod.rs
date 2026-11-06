@@ -12,16 +12,15 @@ use crate::{
 };
 
 pub mod cauldron;
+pub mod grow_bed;
 
 pub(super) fn plugin(app: &mut App) {
     app.load_resource::<StationAssets>();
     app.add_plugins(cauldron::plugin);
+    app.add_plugins(grow_bed::plugin);
     app.register_type::<StationKind>()
         .register_type::<Station>();
-    app.add_systems(
-        Update,
-        sync_atlas_size.run_if(resource_changed::<StationAssets>),
-    );
+    app.add_systems(Update, sync_atlas_size);
 }
 
 /// Every kind of station the witch can use.
@@ -145,7 +144,7 @@ impl StationKind {
                 "Brew",
                 srgb(0.25, 0.25, 0.30),
                 Vec2::splat(0.9),
-                0.08,
+                1.0,
             ),
             StationKind::Bed => ("Bed", "Bed", srgb(0.55, 0.35, 0.65), Vec2::ONE, 1.0),
             StationKind::Trash => (

@@ -128,8 +128,8 @@ impl PlayerKind {
         match self {
             PlayerKind::OrdinaryWitch => PlayerStats {
                 health: 100.0,
-                speed: 160.0,
-                scale: 0.1,
+                speed: 400.0,
+                scale: 0.75,
                 color: Color::srgb(1.0, 0.5, 0.5),
                 collider_rad: 20.0,
             },

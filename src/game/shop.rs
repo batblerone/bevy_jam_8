@@ -25,7 +25,7 @@ use crate::{
 
 /// Current tile size in ShopMap.tmx. Also used as the station footprint unit.
 pub const TILE_SIZE: f32 = 128.0;
-const CAMERA_VIEW_HEIGHT: f32 = TILE_SIZE * 9.0;
+const CAMERA_VIEW_HEIGHT: f32 = TILE_SIZE * 15.0;
 const Y_SORT_FACTOR: f32 = 0.001;
 
 pub(super) fn plugin(app: &mut App) {
