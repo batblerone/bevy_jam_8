@@ -173,13 +173,12 @@ pub fn player_base_scene(kind: PlayerKind) -> impl Scene {
 }
 
 /// The actual player character, ready to fly into the world anew
-#[allow(unused)]
 pub fn player(kind: PlayerKind, assets: &PlayerAssets) -> impl Scene {
     let animation = PlayerAnimation::new();
     let sheet = assets.sheet(kind);
     let layout = assets.layout(kind);
-    let mesh = assets.mesh(kind);
-    let material = assets.material(kind);
+    let _mesh = assets.mesh(kind);
+    let _material = assets.material(kind);
     let index = animation.get_atlas_index();
     let transform = Transform::from_scale(Vec3::splat(kind.player_stats().scale));
     bsn! {
