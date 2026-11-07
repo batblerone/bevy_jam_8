@@ -8,8 +8,6 @@ use crate::game_manager::{GamePhase, NightTickEvent};
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(Update, (
         Cauldron::on_brew_tick.run_if(in_state(GamePhase::Night)),
-        sync_cauldron_visuals,
-        animate_cauldron_sprites,
     ));
     app.add_observer(observe_cauldron_interact);
     app.add_observer(observe_cauldron_interact_ingredient);
@@ -17,7 +15,6 @@ pub(super) fn plugin(app: &mut App) {
 
 #[derive(Component, Debug, Clone)]
 pub struct Cauldron {
-    pub station_id: u32,
     pub ingredients: Vec<IngredientKind>,
     pub is_brewing: bool,
     pub remaining_brew_time: f32,
@@ -27,10 +24,8 @@ pub struct Cauldron {
 }
 
 impl Cauldron {
-    pub fn new(station_id: u32) -> Self {
-        println!("Cauldron (station_id: {}) initialized.", station_id);
+    pub fn new() -> Self {
         Self {
-            station_id: station_id,
             ingredients: Vec::new(),
             is_brewing: false,
             remaining_brew_time: 0.0,
@@ -76,7 +71,6 @@ impl Cauldron {
     }
 
     pub fn complete_brew(&mut self, alchemy_database: &AlchemyDatabase) {
-        println!("Cauldron (station_id: {}) completed brewing with ingredients: {:?}", self.station_id, self.ingredients);
         self.brewed_potion = alchemy_database
             .find_potion_by_ingredients(&self.ingredients)
             .cloned();
@@ -107,74 +101,6 @@ impl Cauldron {
     }
 }
 
-#[derive(Component, Debug, Default)]
-pub struct CauldronAnimation {
-    pub timer: Timer,
-    pub first_frame: usize,
-    pub last_frame: usize,
-}
-
-impl CauldronAnimation {
-    pub fn default() -> Self {
-        Self {
-            timer: Timer::from_seconds(0.1, TimerMode::Repeating),
-            first_frame: 0,
-            last_frame: 0,
-        }
-    }
-}
-
-fn sync_cauldron_visuals(
-    mut query: Query<(&Cauldron, &mut CauldronAnimation, &mut Sprite), Changed<Cauldron>>,
-) {
-    for (cauldron, mut anim, mut sprite) in query.iter_mut() {
-        let (first, last, speed) = if cauldron.is_locked {
-            (0, 0, 0.1) // Locked frame
-        } else if cauldron.is_broken {
-            (1, 1, 0.1) // Broken frame
-        } else if cauldron.is_brewing {
-            (4, 7, 0.15) // Brewing animation frame indices 4 through 7
-        } else if !cauldron.ingredients.is_empty() {
-            (2, 3, 0.2) // Filling / filled animation loop
-        } else {
-            (0, 0, 0.1) // Default Idle
-        };
-
-        // If the animation state changed, reset the indices and timer
-        if anim.first_frame != first || anim.last_frame != last {
-            anim.first_frame = first;
-            anim.last_frame = last;
-            anim.timer = Timer::from_seconds(speed, TimerMode::Repeating);
-            if let Some(ref mut atlas) = sprite.texture_atlas {
-                atlas.index = first;
-            }
-        }
-    }
-}
-
-fn animate_cauldron_sprites(
-    time: Res<Time>,
-    mut query: Query<(&mut CauldronAnimation, &mut Sprite)>,
-) {
-    for (mut anim, mut sprite) in query.iter_mut() {
-        // Skip updating static icons/frames
-        if anim.first_frame == anim.last_frame {
-            continue;
-        }
-
-        anim.timer.tick(time.delta());
-        if anim.timer.just_finished() {
-            if let Some(ref mut atlas) = sprite.texture_atlas {
-                if atlas.index >= anim.last_frame {
-                    atlas.index = anim.first_frame;
-                } else {
-                    atlas.index += 1;
-                }
-            }
-        }
-    }
-}
-
 pub fn observe_cauldron_interact(
     event: On<Interacted>,
     mut cauldron_query: Query<&mut Cauldron>
@@ -192,12 +118,10 @@ pub fn observe_cauldron_interact_ingredient(
     event: On<ItemPlaced>,
     mut cauldron_query: Query<&mut Cauldron>,
     ingredient_query: Query<&Ingredient>,
-){
-    println!("{}, {}, {}", event.by, event.item, event.entity);
-  
-    if let Ok(mut ingredient) = ingredient_query.get(event.item){
+){  
+    if let Ok(ingredient) = ingredient_query.get(event.item){
         if let Ok(mut cauldron) = cauldron_query.get_mut(event.entity) {
-            if(!cauldron.is_brewing){
+            if !cauldron.is_brewing {
                 cauldron.add_ingredient(ingredient.kind);
                 cauldron.start_brewing();
             }

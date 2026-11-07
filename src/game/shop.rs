@@ -10,17 +10,11 @@ use bevy::{camera::ScalingMode, prelude::*, transform::TransformSystems};
 use bevy_ecs_tiled::prelude::*;
 
 use crate::{
-    MainCamera,
-    game::{
-        physics::GameLayer,
-        player::Player,
-        stations::{
-            StationAssets, StationKind,
-            cauldron::{Cauldron, CauldronAnimation},
-            stations,
+    MainCamera, game::{
+        animation::{CauldronAnimation, GrowBedAnimation}, physics::GameLayer, player::Player, stations::{
+            StationAssets, StationKind, cauldron::Cauldron, grow_bed::GrowBed, stations,
         },
-    },
-    game_manager::{RunSetup, Screen},
+    }, game_manager::{RunSetup, Screen},
 };
 
 /// Current tile size in ShopMap.tmx. Also used as the station footprint unit.
@@ -234,8 +228,14 @@ fn spawn_tiled_objects(
                     ChildOf(*shop),
                     FromTiledMarker(marker),
                 ));
-                if kind == StationKind::Cauldron {
-                    station.insert((Cauldron::new(id.0), CauldronAnimation::default()));
+                match kind {
+                    StationKind::Cauldron => {
+                        station.insert((Cauldron::new(), CauldronAnimation::default()));
+                    },
+                    StationKind::GrowBed => {
+                        station.insert((GrowBed::new(), GrowBedAnimation::default()));
+                    },
+                    _ => {}
                 }
             }
             MarkerKind::Player => {

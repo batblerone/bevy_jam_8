@@ -173,7 +173,7 @@ fn start_run(
     mut run_cycle: ResMut<RunCycle>,
     current_phase: Res<State<GamePhase>>,
     mut next_phase: ResMut<NextState<GamePhase>>,
-    mut alchemyDatabase: ResMut<AlchemyDatabase>,
+    mut alchemy_database: ResMut<AlchemyDatabase>,
 ) {
     debug!("\n\n ----- [RUN INITIALIZATION] ----- \n\n");
 
@@ -193,7 +193,7 @@ fn start_run(
         }
     }
     // Reset the alchemy database for a new run
-    *alchemyDatabase = AlchemyDatabase::new();
+    *alchemy_database = AlchemyDatabase::new();
 
     // Reset the run cycle counter to Day 0
     run_cycle.current_day = 0;

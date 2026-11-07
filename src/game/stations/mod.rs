@@ -6,9 +6,7 @@ use bevy::{
 };
 
 use crate::{
-    asset_tracking::LoadResource,
-    game::{interaction::Interactable, physics::*, shop::YSort},
-    game_manager::Screen,
+    asset_tracking::LoadResource, game::{animation::GrowBedAnimation, interaction::Interactable, physics::*, shop::YSort, stations::{cauldron::{Cauldron}, grow_bed::GrowBed}}, game_manager::Screen,
 };
 
 pub mod cauldron;
@@ -62,6 +60,7 @@ pub struct StationSpec {
     /// completely so a row of them forms a solid, seamless barrier.
     pub size: Vec2,
     pub scale: f32,
+    pub collider: Collider
 }
 
 /// The sprite sheet for a station. The loader uses this to build a `TextureAtlas`.
@@ -102,57 +101,78 @@ impl StationKind {
     }
 
     pub fn spec(self) -> StationSpec {
-        let (name, label, color, size, scale) = match self {
-            StationKind::Counter => ("Counter", "", srgb(0.55, 0.36, 0.22), Vec2::ONE, 1.0),
+        let (name, label, color, size, scale, collider) = match self {
+            StationKind::Counter => (
+                "Counter",
+                "",
+                srgb(0.55, 0.36, 0.22),
+                Vec2::ONE,
+                1.0,
+                Collider::rectangle(0.75, 0.75)
+            ),
             StationKind::ServiceCounter => (
                 "Service Counter",
                 "Serve",
                 srgb(0.85, 0.65, 0.20),
-                Vec2::ONE,
+                Vec2::new(128.0, 128.0),
                 1.0,
+                Collider::rectangle(0.75, 0.75)
             ),
             StationKind::Crate => (
                 "Ingredient Crate",
                 "Crate",
                 srgb(0.70, 0.50, 0.30),
-                Vec2::splat(0.9),
+                Vec2::new(128.0, 128.0),
                 1.0,
+                Collider::rectangle(0.75, 0.75)
             ),
             StationKind::FlaskShelf => (
                 "Flask Shelf",
                 "Flask",
                 srgb(0.45, 0.75, 0.85),
-                Vec2::splat(0.9),
+                Vec2::new(256.0, 512.0),
                 1.0,
+                Collider::rectangle(0.75, 0.75)
             ),
             StationKind::Mortar => (
                 "Mortar",
                 "Mortar",
                 srgb(0.60, 0.60, 0.65),
-                Vec2::splat(0.7),
+                Vec2::new(512.0, 512.0),
                 1.0,
+                Collider::rectangle(0.75, 0.75)
             ),
             StationKind::DryingRack => (
                 "Drying Rack",
                 "Dry",
                 srgb(0.65, 0.55, 0.30),
-                Vec2::splat(0.9),
+                Vec2::new(512.0, 512.0),
                 1.0,
+                Collider::rectangle(0.75, 0.75)
             ),
             StationKind::Cauldron => (
                 "Cauldron",
                 "Brew",
                 srgb(0.25, 0.25, 0.30),
                 Vec2::new(512.0, 512.0),
-                1.0,
+                0.8,
+                Collider::rectangle(0.75, 0.75)
             ),
-            StationKind::Bed => ("Bed", "Bed", srgb(0.55, 0.35, 0.65), Vec2::ONE, 1.0),
+            StationKind::Bed => (
+                "Bed",
+                "Bed",
+                srgb(0.55, 0.35, 0.65),
+                Vec2::new(256.0, 512.0),
+                1.0,
+                Collider::rectangle(0.75, 0.75)
+            ),
             StationKind::Trash => (
                 "Trash",
                 "Trash",
                 srgb(0.35, 0.40, 0.35),
-                Vec2::splat(0.7),
+                Vec2::new(128.0, 256.0),
                 1.0,
+                Collider::rectangle(0.75, 0.75)
             ),
             StationKind::GrowBed => (
                 "Grow Bed",
@@ -160,6 +180,7 @@ impl StationKind {
                 srgb(0.30, 0.55, 0.25),
                 Vec2::new(256.0, 256.0),
                 1.0,
+                Collider::rectangle(1.0, 1.0)
             ),
         };
         StationSpec {
@@ -168,6 +189,7 @@ impl StationKind {
             color,
             size,
             scale,
+            collider
         }
     }
 
@@ -175,14 +197,14 @@ impl StationKind {
         match self {
             StationKind::Cauldron => StationSpriteSheet {
                 frame_size: UVec2::splat(512),
-                columns: 1,
-                rows: 1,
+                columns: 4,
+                rows: 3,
                 padding: 0,
                 offset: UVec2::new(1536, 2688),
             },
             StationKind::GrowBed => StationSpriteSheet {
                 frame_size: UVec2::splat(256),
-                columns: 1,
+                columns: 6,
                 rows: 1,
                 padding: 0,
                 offset: UVec2::new(0, 3072),
@@ -209,8 +231,13 @@ pub fn stations_base_scene(kind: StationKind) -> impl Scene {
     let size = spec.size * spec.scale;
     let collider = Collider::rectangle(size.x * 0.75, size.y * 0.75);
     let layers = GameLayer::station_layers();
-    let station = Station { kind };
+    let station = Station{ kind };
     let despawn = DespawnOnExit(Screen::Gameplay);
+    // let animation = match kind{
+    //     StationKind::Cauldron => CauldronAnimation::new(),
+    //     StationKind::GrowBed => GrowBedAnimation::new(),
+    //     _ => None
+    // }
 
     bsn! {
         Name::new(spec.name)

@@ -184,3 +184,135 @@ impl PlayerAnimation {
         self.state == PlayerAnimationState::Walking && self.timer.just_finished()
     }
 }
+
+/// Component that tracks growbed's animation state.
+/// It is tightly bound to the texture atlas we use.
+#[derive(Component, Reflect, Clone)]
+#[reflect(Component)]
+pub struct GrowBedAnimation {
+    frame: usize,
+}
+
+impl Default for GrowBedAnimation {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl GrowBedAnimation {
+    /// The number of walking frames.
+    const GROWTH_FRAMES: usize = 6;
+
+    pub fn new() -> Self {
+        Self {
+            frame: 0,
+        }
+    }
+
+    /// Update the timer
+    pub fn update_frame(&mut self, growth_stage: usize) {
+        if growth_stage < 0 || growth_stage >= Self::GROWTH_FRAMES {
+            return;
+        }
+
+        self.frame = growth_stage;
+    }
+
+    pub fn get_atlas_index(&self) -> usize {
+        self.frame
+    }
+}
+
+
+
+/// Component that tracks cauldrons's animation state.
+/// It is tightly bound to the texture atlas we use.
+#[derive(Component, Reflect, Clone)]
+#[reflect(Component)]
+pub struct CauldronAnimation {
+    timer: Timer,
+    frame: usize,
+    state: CauldronAnimationState,
+}
+
+#[derive(Reflect, PartialEq, Eq, Clone, Copy, Default)]
+pub enum CauldronAnimationState {
+    #[default]
+    Idling,
+    Brewing,
+    Unusable,
+}
+
+impl Default for CauldronAnimation {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl CauldronAnimation {
+    /// The number of idle frames.
+    const IDLE_FRAMES: usize = 1;
+    /// The duration of each idle frame. Also used for directional animation.
+    const IDLE_INTERVAL: Duration = Duration::from_millis(500);
+    /// The number of walking frames.
+    const BREWING_FRAMES: usize = 4;
+    /// The duration of each walking frame.
+    const BREWING_INTERVAL: Duration = Duration::from_millis(100);
+    /// The number of unusable frames.
+    const UNUSABLE_FRAMES: usize = 1;
+    /// The duration of each unusable frame. Also used for directional animation.
+    const UNUSABLE_INTERVAL: Duration = Duration::from_millis(500);
+    /// The number of frames per directional animation loop
+    const FRAMES_PER_DIRECTION: usize = 1; // One frame each direction
+
+    pub fn new() -> Self {
+        Self {
+            timer: Timer::new(Self::BREWING_INTERVAL, TimerMode::Repeating),
+            frame: 0,
+            state: CauldronAnimationState::Idling,
+        }
+    }
+
+    /// Update animation state if it changes.
+    pub fn update_state(&mut self, state: CauldronAnimationState) {
+        if self.state != state {
+            self.state = state;
+            self.frame = 0;
+            self.timer.reset();
+        }
+    }
+
+    /// Update the timer
+    pub fn update_timer(&mut self, delta: Duration, sprinting: bool) {
+        if self.state == CauldronAnimationState::Idling {
+            return;
+        }
+
+        let interval = Self::BREWING_INTERVAL;
+
+        self.timer.set_duration(interval);
+        self.timer.tick(delta);
+
+        let advance = self.timer.times_finished_this_tick() as usize;
+
+        if advance > 0 {
+            self.frame = (self.frame + advance) % Self::BREWING_FRAMES;
+        }
+    }
+
+    /// Returns a sprite index in the atlas based on direction.
+    /// We can specify that each direction occupies a n to n + x number
+    /// of indicies. For now our n is 1 and each animation is only
+    /// 1 frame, so 1 + 0.
+    pub fn get_atlas_index(&self) -> usize {
+        match self.state {
+            CauldronAnimationState::Idling => 8,
+            CauldronAnimationState::Brewing => self.frame,
+            CauldronAnimationState::Unusable => 12,
+        }
+    }
+
+    pub fn changed(&self) -> bool {
+        self.state == CauldronAnimationState::Brewing && self.timer.just_finished()
+    }
+}
