@@ -30,18 +30,30 @@ pub struct GrowBed {
 
 impl GrowBed {
     pub fn new() -> Self {
-        Self {
+        let mut new_grow_bed = Self {
             is_planted: true,
             is_harvestable: false,
             growth_stage: 0,
             is_broken: false,
             is_locked: false,
-            active_seed: Some(Seed {
-                kind: IngredientKind::Fireweed,
-                grow_time: 10.0
-            }),
+            active_seed: None,
             remaining_grow_time: 10.0
+        };
+
+        // USED SOLELY FOR DEBUGGING PURPOSES
+        // TODO: REMOVE THIS
+        let mut new_seed = None;
+        if rand::random::<bool>() {
+           new_seed = Some(
+                Seed {
+                    kind: IngredientKind::Fireweed,
+                    grow_time: 10.0
+                }
+            );
+            
         }
+        new_grow_bed.set_seed(new_seed);
+        return new_grow_bed;
     }
 
     pub fn set_seed(&mut self, new_seed: Option<Seed>){
@@ -50,12 +62,16 @@ impl GrowBed {
         if let Some(_) = self.active_seed.as_ref() {
             self.start_growth();
         }
+        else{
+            self.growth_stage = 0;
+        }
     }
 
     pub fn start_growth(&mut self){
         if let Some(seed) = self.active_seed.as_ref() {
             self.is_planted = true;
             self.remaining_grow_time = seed.grow_time;
+            self.growth_stage = 1;
         }
     }
 
@@ -101,7 +117,6 @@ impl GrowBed {
         player_transform: Option<&Transform>,
         assets: Option<Res<IngredientAssets>>,
     ){
-        println!("Harvest triggered!");
         if self.is_planted && self.is_harvestable && self.remaining_grow_time <= 0.0 {
             // Calculate the drop direction (defaults to upward/forward if transforms missing)
             let mut drop_direction = Vec3::Y; // Default upward bounce
@@ -145,6 +160,14 @@ impl GrowBed {
             
             println!("Harvest Complete!");
         }
+    }
+
+    pub fn end_growth(&mut self){
+        self.is_planted = false;
+        self.remaining_grow_time = 0.0;
+        self.growth_stage = 0;
+        self.active_seed = None;
+        self.is_harvestable = false;
     }
 }
 
