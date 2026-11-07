@@ -214,6 +214,7 @@ pub fn stations_base_scene(kind: StationKind) -> impl Scene {
 
     bsn! {
         Name::new(spec.name)
+        Station { self }
         kind
         station
         Interactable
