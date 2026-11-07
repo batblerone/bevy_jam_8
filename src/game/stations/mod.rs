@@ -58,7 +58,7 @@ pub struct StationSpec {
     pub color: Color,
     /// Footprint in tiles. Also the collider size. Counters fill their tile
     /// completely so a row of them forms a solid, seamless barrier.
-    pub size: Vec2,
+    pub size: UVec2,
     pub scale: f32,
     pub collider: Collider
 }
@@ -178,7 +178,7 @@ impl StationKind {
                 "Grow Bed",
                 "Grow",
                 srgb(0.30, 0.55, 0.25),
-                Vec2::new(256.0, 256.0),
+                UVec2::new(256, 256),
                 1.0,
                 Collider::rectangle(1.0, 1.0)
             ),
@@ -228,8 +228,8 @@ const fn srgb(r: f32, g: f32, b: f32) -> Color {
 /// target this entity through `Interactable` and its Avian collider.
 pub fn stations_base_scene(kind: StationKind) -> impl Scene {
     let spec = kind.spec();
-    let size = spec.size * spec.scale;
-    let collider = Collider::rectangle(size.x * 0.75, size.y * 0.75);
+    let size = spec.size.x as f32 * spec.scale;
+    let collider = Collider::rectangle(size, size);
     let layers = GameLayer::station_layers();
     let station = Station{ kind };
     let despawn = DespawnOnExit(Screen::Gameplay);
@@ -241,7 +241,7 @@ pub fn stations_base_scene(kind: StationKind) -> impl Scene {
 
     bsn! {
         Name::new(spec.name)
-        kind
+        Station { kind }
         station
         Interactable
         YSort
@@ -343,7 +343,7 @@ impl FromWorld for StationAssets {
             let mut meshes = world.resource_mut::<Assets<Mesh>>();
             StationKind::ALL
                 .iter()
-                .map(|kind| meshes.add(Circle::new(kind.spec().size.x)))
+                .map(|kind| meshes.add(Circle::new(kind.spec().size.x as f32)))
                 .collect()
         };
 
