@@ -60,7 +60,7 @@ pub struct StationSpec {
     pub color: Color,
     /// Footprint in tiles. Also the collider size. Counters fill their tile
     /// completely so a row of them forms a solid, seamless barrier.
-    pub size: Vec2,
+    pub size: UVec2,
     pub scale: f32,
 }
 
@@ -103,62 +103,62 @@ impl StationKind {
 
     pub fn spec(self) -> StationSpec {
         let (name, label, color, size, scale) = match self {
-            StationKind::Counter => ("Counter", "", srgb(0.55, 0.36, 0.22), Vec2::ONE, 1.0),
+            StationKind::Counter => ("Counter", "", srgb(0.55, 0.36, 0.22), UVec2::ONE, 1.0),
             StationKind::ServiceCounter => (
                 "Service Counter",
                 "Serve",
                 srgb(0.85, 0.65, 0.20),
-                Vec2::ONE,
+                UVec2::ONE,
                 1.0,
             ),
             StationKind::Crate => (
                 "Ingredient Crate",
                 "Crate",
                 srgb(0.70, 0.50, 0.30),
-                Vec2::splat(0.9),
+                UVec2::splat(1),
                 1.0,
             ),
             StationKind::FlaskShelf => (
                 "Flask Shelf",
                 "Flask",
                 srgb(0.45, 0.75, 0.85),
-                Vec2::splat(0.9),
+                UVec2::splat(1),
                 1.0,
             ),
             StationKind::Mortar => (
                 "Mortar",
                 "Mortar",
                 srgb(0.60, 0.60, 0.65),
-                Vec2::splat(0.7),
+                UVec2::splat(1),
                 1.0,
             ),
             StationKind::DryingRack => (
                 "Drying Rack",
                 "Dry",
                 srgb(0.65, 0.55, 0.30),
-                Vec2::splat(0.9),
+                UVec2::splat(1),
                 1.0,
             ),
             StationKind::Cauldron => (
                 "Cauldron",
                 "Brew",
                 srgb(0.25, 0.25, 0.30),
-                Vec2::new(512.0, 512.0),
+                UVec2::new(512, 512),
                 1.0,
             ),
-            StationKind::Bed => ("Bed", "Bed", srgb(0.55, 0.35, 0.65), Vec2::ONE, 1.0),
+            StationKind::Bed => ("Bed", "Bed", srgb(0.55, 0.35, 0.65), UVec2::ONE, 1.0),
             StationKind::Trash => (
                 "Trash",
                 "Trash",
                 srgb(0.35, 0.40, 0.35),
-                Vec2::splat(0.7),
+                UVec2::splat(1),
                 1.0,
             ),
             StationKind::GrowBed => (
                 "Grow Bed",
                 "Grow",
                 srgb(0.30, 0.55, 0.25),
-                Vec2::new(256.0, 256.0),
+                UVec2::new(256, 256),
                 1.0,
             ),
         };
@@ -174,14 +174,14 @@ impl StationKind {
     pub fn sprite_sheet(self) -> StationSpriteSheet {
         match self {
             StationKind::Cauldron => StationSpriteSheet {
-                frame_size: UVec2::splat(512),
+                frame_size: self.spec().size,
                 columns: 1,
                 rows: 1,
                 padding: 0,
                 offset: UVec2::new(1536, 2688),
             },
             StationKind::GrowBed => StationSpriteSheet {
-                frame_size: UVec2::splat(256),
+                frame_size: self.spec().size,
                 columns: 1,
                 rows: 1,
                 padding: 0,
@@ -206,8 +206,8 @@ const fn srgb(r: f32, g: f32, b: f32) -> Color {
 /// target this entity through `Interactable` and its Avian collider.
 pub fn stations_base_scene(kind: StationKind) -> impl Scene {
     let spec = kind.spec();
-    let size = spec.size * spec.scale;
-    let collider = Collider::rectangle(size.x * 0.75, size.y * 0.75);
+    let size = spec.size.x as f32 * spec.scale;
+    let collider = Collider::rectangle(size, size);
     let layers = GameLayer::station_layers();
     let station = Station { kind };
     let despawn = DespawnOnExit(Screen::Gameplay);
@@ -316,7 +316,7 @@ impl FromWorld for StationAssets {
             let mut meshes = world.resource_mut::<Assets<Mesh>>();
             StationKind::ALL
                 .iter()
-                .map(|kind| meshes.add(Circle::new(kind.spec().size.x)))
+                .map(|kind| meshes.add(Circle::new(kind.spec().size.x as f32)))
                 .collect()
         };
 
