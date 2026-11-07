@@ -106,7 +106,7 @@ impl StationKind {
                 "Counter",
                 "",
                 srgb(0.55, 0.36, 0.22),
-                Vec2::ONE,
+                UVec2::ONE,
                 1.0,
                 Collider::rectangle(0.75, 0.75)
             ),
@@ -114,7 +114,7 @@ impl StationKind {
                 "Service Counter",
                 "Serve",
                 srgb(0.85, 0.65, 0.20),
-                Vec2::new(128.0, 128.0),
+                UVec2::new(128, 128),
                 1.0,
                 Collider::rectangle(0.75, 0.75)
             ),
@@ -122,7 +122,7 @@ impl StationKind {
                 "Ingredient Crate",
                 "Crate",
                 srgb(0.70, 0.50, 0.30),
-                Vec2::new(128.0, 128.0),
+                UVec2::new(128, 128),
                 1.0,
                 Collider::rectangle(0.75, 0.75)
             ),
@@ -130,7 +130,7 @@ impl StationKind {
                 "Flask Shelf",
                 "Flask",
                 srgb(0.45, 0.75, 0.85),
-                Vec2::new(256.0, 512.0),
+                UVec2::new(256, 512),
                 1.0,
                 Collider::rectangle(0.75, 0.75)
             ),
@@ -138,7 +138,7 @@ impl StationKind {
                 "Mortar",
                 "Mortar",
                 srgb(0.60, 0.60, 0.65),
-                Vec2::new(512.0, 512.0),
+                UVec2::new(512, 512),
                 1.0,
                 Collider::rectangle(0.75, 0.75)
             ),
@@ -146,7 +146,7 @@ impl StationKind {
                 "Drying Rack",
                 "Dry",
                 srgb(0.65, 0.55, 0.30),
-                Vec2::new(512.0, 512.0),
+                UVec2::new(512, 512),
                 1.0,
                 Collider::rectangle(0.75, 0.75)
             ),
@@ -154,7 +154,7 @@ impl StationKind {
                 "Cauldron",
                 "Brew",
                 srgb(0.25, 0.25, 0.30),
-                Vec2::new(512.0, 512.0),
+                UVec2::new(512, 512),
                 0.8,
                 Collider::rectangle(0.75, 0.75)
             ),
@@ -162,7 +162,7 @@ impl StationKind {
                 "Bed",
                 "Bed",
                 srgb(0.55, 0.35, 0.65),
-                Vec2::new(256.0, 512.0),
+                UVec2::new(256, 512),
                 1.0,
                 Collider::rectangle(0.75, 0.75)
             ),
@@ -170,7 +170,7 @@ impl StationKind {
                 "Trash",
                 "Trash",
                 srgb(0.35, 0.40, 0.35),
-                Vec2::new(128.0, 256.0),
+                UVec2::new(128, 256),
                 1.0,
                 Collider::rectangle(0.75, 0.75)
             ),
