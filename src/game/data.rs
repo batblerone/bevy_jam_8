@@ -103,7 +103,7 @@ impl IngredientKind {
                 columns: 1,
                 rows: 1,
                 padding: 0,
-                offset: UVec2::new(1536, 2688),
+                offset: UVec2::new(0, 0),
             },
             IngredientKind::Silkworm => IngredientSpriteSheet {
                 frame_size: UVec2::splat(128),
@@ -155,24 +155,7 @@ pub struct Ingredient {
 }
 
 impl Ingredient {
-    /// Extracts the specific effect based strictly on its positional sequence index (0 to 3).
-    pub fn get_effect_by_slot_index(&self, index: usize) -> Option<IngredientEffect> {
-        match index {
-        0 => unsafe {
-            Some(IngredientEffect::Base(std::mem::transmute(self.kind as u8)))
-        },
-        1 => unsafe {
-            Some(IngredientEffect::Modifier(std::mem::transmute(self.kind as u8)))
-        },
-        2 => unsafe {
-            Some(IngredientEffect::Utility(std::mem::transmute(self.kind as u8)))
-        },
-        3 => unsafe {
-            Some(IngredientEffect::Delivery(std::mem::transmute(self.kind as u8)))
-        },
-        _ => None,
-        }
-    }
+    
 }
 
 /// Recipe configuration supporting anywhere from 1 to 4 generic sequential ingredients.
@@ -268,16 +251,14 @@ pub fn ingredients_base_scene(kind: IngredientKind) -> impl Scene {
     let size = spec.size * spec.scale;
     let collider = Collider::rectangle(size.x * 0.75, size.y * 0.75);
     let layers = GameLayer::pickup_layers();
-    let station = Ingredient { kind };
     let despawn = DespawnOnExit(Screen::Gameplay);
 
     bsn! {
         Name::new(spec.name)
         kind
-        station
         Interactable
         YSort
-        RigidBody::Static
+        RigidBody::Dynamic
         collider
         layers
         despawn
@@ -397,7 +378,7 @@ impl FromWorld for IngredientAssets {
             .with_settings(|settings: &mut ImageLoaderSettings| {
                 settings.sampler = ImageSampler::nearest();
             })
-            .load("images/SpriteSheet.png");
+            .load("images/Ingredients.png");
 
         let sheets: Vec<Handle<Image>> = IngredientKind::ALL.iter().map(|_| sheet.clone()).collect();
 
