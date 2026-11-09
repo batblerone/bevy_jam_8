@@ -1,40 +1,53 @@
+#![allow(unused)]
+
 use avian2d::{collision::collider::Collider, dynamics::rigid_body::RigidBody};
-use bevy::{image::{ImageLoaderSettings, ImageSampler, TextureAtlasTemplate}, prelude::*, sprite_render::AlphaMode2d};
+use bevy::{
+    image::{ImageLoaderSettings, ImageSampler, TextureAtlasTemplate},
+    prelude::*,
+    sprite_render::AlphaMode2d,
+};
 use std::path::PathBuf;
 
-use crate::{game::{interaction::Interactable, physics::GameLayer, shop::YSort}, game_manager::Screen};
+use crate::{
+    game::{interaction::Interactable, physics::GameLayer, shop::YSort},
+    game_manager::Screen,
+};
 
 // ==========================================
 // UNIQUE SLOT INGREDIENT EFFECT POOLS
 // ==========================================
 
 /// Every ingredient has its own unique pool of slot outcomes.
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum BaseEffect {
-    Fire=0,
-    Light=1,
-    StickyWeb=2,
+    Fire = 0,
+    Light = 1,
+    StickyWeb = 2,
 }
+
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ModifierEffect {
-    Explosion=0,
-    Resistance=1,
-    Blindness=2,
+    Explosion = 0,
+    Resistance = 1,
+    Blindness = 2,
 }
-    
+
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum UtilityEffect {
-    Replicate=0,
-    Smoothen=1,
-    Electrify=2,
+    Replicate = 0,
+    Smoothen = 1,
+    Electrify = 2,
 }
+
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum DeliveryEffect {
-    Splash=0,
-    Stretch=1,
-    Aura=2,
+    Splash = 0,
+    Stretch = 1,
+    Aura = 2,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -52,9 +65,9 @@ pub enum IngredientEffect {
 #[reflect(Component, Default)]
 pub enum IngredientKind {
     #[default]
-    Fireweed=0,
-    Silkworm=1,
-    Glowcap=2,
+    Fireweed = 0,
+    Silkworm = 1,
+    Glowcap = 2,
 }
 
 impl IngredientKind {
@@ -79,13 +92,7 @@ impl IngredientKind {
                 Vec2::ONE,
                 1.0,
             ),
-            _ => (
-                "",
-                "",
-                Color::srgb(0.0, 0.0, 0.0),
-                Vec2::ONE,
-                1.0,
-            )
+            _ => ("", "", Color::srgb(0.0, 0.0, 0.0), Vec2::ONE, 1.0),
         };
         IngredientSpec {
             name,
@@ -154,9 +161,7 @@ pub struct Ingredient {
     pub kind: IngredientKind,
 }
 
-impl Ingredient {
-    
-}
+impl Ingredient {}
 
 /// Recipe configuration supporting anywhere from 1 to 4 generic sequential ingredients.
 #[derive(Debug, Clone)]
@@ -169,7 +174,7 @@ pub struct Recipe {
 pub struct Potion {
     pub name: String,
     pub active_effects: Vec<IngredientEffect>,
-    pub recipe : Recipe,
+    pub recipe: Recipe,
 }
 
 // ==========================================
@@ -186,13 +191,13 @@ impl AlchemyDatabase {
         Self {
             ingredients: vec![
                 Ingredient {
-                    kind: IngredientKind::Fireweed
+                    kind: IngredientKind::Fireweed,
                 },
                 Ingredient {
-                    kind: IngredientKind::Silkworm
+                    kind: IngredientKind::Silkworm,
                 },
                 Ingredient {
-                    kind: IngredientKind::Glowcap
+                    kind: IngredientKind::Glowcap,
                 },
             ],
             potions: vec![
@@ -232,15 +237,24 @@ impl AlchemyDatabase {
     }
 
     pub fn find_potion_by_recipe(&self, recipe: &Recipe) -> Option<&Potion> {
-        self.potions.iter().find(|p| p.recipe.ingredients == recipe.ingredients)
+        self.potions
+            .iter()
+            .find(|p| p.recipe.ingredients == recipe.ingredients)
     }
 
     pub fn find_potion_by_ingredients(&self, ingredients: &[IngredientKind]) -> Option<&Potion> {
-        self.potions.iter().find(|p| p.recipe.ingredients == ingredients)
+        self.potions
+            .iter()
+            .find(|p| p.recipe.ingredients == ingredients)
     }
 
-    pub fn find_potion_by_active_effects(&self, active_effects: &[IngredientEffect]) -> Option<&Potion> {
-        self.potions.iter().find(|p| p.active_effects == *active_effects)
+    pub fn find_potion_by_active_effects(
+        &self,
+        active_effects: &[IngredientEffect],
+    ) -> Option<&Potion> {
+        self.potions
+            .iter()
+            .find(|p| p.active_effects == *active_effects)
     }
 }
 
@@ -380,7 +394,8 @@ impl FromWorld for IngredientAssets {
             })
             .load("images/Ingredients.png");
 
-        let sheets: Vec<Handle<Image>> = IngredientKind::ALL.iter().map(|_| sheet.clone()).collect();
+        let sheets: Vec<Handle<Image>> =
+            IngredientKind::ALL.iter().map(|_| sheet.clone()).collect();
 
         Self {
             sheets,

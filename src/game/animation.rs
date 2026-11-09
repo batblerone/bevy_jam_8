@@ -1,3 +1,5 @@
+#![allow(unused)]
+#![allow(dead_code)]
 //! Player sprite animation.
 //! This is based on multiple examples and may be very different for your game.
 //! - [Sprite flipping](https://github.com/bevyengine/bevy/blob/latest/examples/2d/sprite_flipping.rs)
@@ -9,7 +11,13 @@ use rand::prelude::*;
 use std::time::Duration;
 
 use crate::{
-    AppSystems, PausableSystems, audio::sound_effect, game::{movement::MovementIntent, player::PlayerAssets, stations::{cauldron::Cauldron, grow_bed::GrowBed}},
+    AppSystems, PausableSystems,
+    audio::sound_effect,
+    game::{
+        movement::MovementIntent,
+        player::PlayerAssets,
+        stations::{cauldron::Cauldron, grow_bed::GrowBed},
+    },
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -19,7 +27,11 @@ pub(super) fn plugin(app: &mut App) {
         (
             update_player_animation_timer.in_set(AppSystems::TickTimers),
             (
-                (update_player_animation_movement, update_player_animation_atlas).chain(),
+                (
+                    update_player_animation_movement,
+                    update_player_animation_atlas,
+                )
+                    .chain(),
                 trigger_step_sound_effect,
             )
                 .chain()
@@ -27,8 +39,7 @@ pub(super) fn plugin(app: &mut App) {
         )
             .in_set(PausableSystems),
     );
-    app
-        .register_station_animation::<CauldronAnimation>()
+    app.register_station_animation::<CauldronAnimation>()
         .register_station_animation::<GrowBedAnimation>();
 }
 
@@ -74,7 +85,7 @@ fn update_station_animation_system<T: StationAnimation>(
     time: Res<Time>,
     mut query: Query<(&T::State, &mut T)>,
 ) where
-    T: Component<Mutability = bevy::ecs::component::Mutable>, 
+    T: Component<Mutability = bevy::ecs::component::Mutable>,
     T::State: Component,
 {
     for (state, mut animation) in &mut query {
@@ -82,9 +93,8 @@ fn update_station_animation_system<T: StationAnimation>(
     }
 }
 
-fn update_station_animation_atlas<T: StationAnimation>(
-    mut query: Query<(&T, &mut Sprite)>,
-) where
+fn update_station_animation_atlas<T: StationAnimation>(mut query: Query<(&T, &mut Sprite)>)
+where
     T: Component,
 {
     for (animation, mut sprite) in &mut query {
@@ -272,9 +282,7 @@ impl GrowBedAnimation {
     const GROWTH_FRAMES: usize = 6;
 
     pub fn new() -> Self {
-        Self {
-            frame: 0,
-        }
+        Self { frame: 0 }
     }
 
     /// Update the timer
@@ -294,7 +302,7 @@ impl StationAnimation for GrowBedAnimation {
     fn update_animation(&mut self, grow_bed: &Self::State, _delta: Duration) {
         // Read the u8 stage from your GrowBed component, cast it safely to usize
         let stage = grow_bed.growth_stage as usize;
-        
+
         // Use your existing bounds-checking function
         self.update_frame(stage);
     }
@@ -402,11 +410,11 @@ impl StationAnimation for CauldronAnimation {
 
     fn update_animation(&mut self, cauldron: &Self::State, delta: Duration) {
         // Here you can write your unique brewing frame logic!
-        // Example: 
-        if cauldron.is_brewing { 
-            self.update_timer(delta); 
-        } else { 
-            self.frame = 8; 
+        // Example:
+        if cauldron.is_brewing {
+            self.update_timer(delta);
+        } else {
+            self.frame = 8;
         }
     }
 

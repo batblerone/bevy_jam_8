@@ -34,6 +34,7 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 /// What an item is. Add potions etc. here as the game grows.
+#[allow(dead_code)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum ItemKind {
     Ingredient(IngredientKind),

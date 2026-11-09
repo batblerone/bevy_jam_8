@@ -7,6 +7,7 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_enhanced_input::prelude::*;
 
+#[allow(unused)]
 use crate::game::{items::Holding, pause::PausableInputExt};
 
 pub(super) fn plugin(app: &mut App) {
@@ -61,6 +62,7 @@ pub struct InteractedWithNothing {
 }
 
 /// Same thing as interacted, but for used
+#[allow(unused)]
 #[derive(EntityEvent)]
 pub struct Used {
     pub entity: Entity,

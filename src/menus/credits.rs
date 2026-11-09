@@ -1,3 +1,4 @@
+#![allow(unused)]
 //! The credits menu.
 
 use bevy::{ecs::spawn::SpawnIter, prelude::*};
@@ -17,8 +18,8 @@ pub(super) fn plugin(app: &mut App) {
         go_back.run_if(in_state(Menu::Credits).and_then(action_just_started::<MenuBack>)),
     );
 
-    app.load_resource::<CreditsAssets>();
-    app.add_systems(OnEnter(Menu::Credits), start_credits_music);
+    // app.load_resource::<CreditsAssets>();
+    // app.add_systems(OnEnter(Menu::Credits), start_credits_music);
 }
 
 fn spawn_credits_menu(mut commands: Commands) {
@@ -38,17 +39,25 @@ fn spawn_credits_menu(mut commands: Commands) {
 
 fn created_by() -> impl Bundle {
     grid(vec![
-        ["Justin Clouthier and Justin MacKinnon", "Programming"],
-        ["David Erskine and Duncan Osmond", "Art and Sprite Design"],
-        ["David Gibson and Heather LeBlanc", "Music and Sound Design"],
+        ["Justin Clouthier and \n Justin MacKinnon", "Programming"],
+        [
+            "David Erskine and \n Duncan Osmond",
+            "Art and Sprite Design",
+        ],
+        [
+            "David Gibson, Oscar, and \n Heather LeBlanc",
+            "Music and Sound Design",
+        ],
     ])
 }
 
 fn assets() -> impl Bundle {
     grid(vec![
-        ["Ducky sprite", "CC0 by Caz Creates Games"],
         ["Button SFX", "CC0 by Jaszunio15"],
-        ["Music", "CC BY 3.0 by Kevin MacLeod"],
+        [
+            "Fluffing a Duck Remix",
+            "A remix of 'Fluffing a Duck' by Kevin MacLeod, CC BY 3.0'",
+        ],
         [
             "Bevy logo",
             "All rights reserved by the Bevy Foundation, permission granted for splash screen use when unmodified",
@@ -99,19 +108,16 @@ struct CreditsAssets {
     music: Handle<AudioSource>,
 }
 
-impl FromWorld for CreditsAssets {
-    fn from_world(world: &mut World) -> Self {
-        let assets = world.resource::<AssetServer>();
-        Self {
-            music: assets.load("audio/music/Monkeys Spinning Monkeys.ogg"),
-        }
-    }
-}
+// impl FromWorld for CreditsAssets {
+//     fn from_world(world: &mut World) -> Self {
+//         return;
+//     }
+// }
 
-fn start_credits_music(mut commands: Commands, credits_music: Res<CreditsAssets>) {
-    commands.spawn((
-        Name::new("Credits Music"),
-        DespawnOnExit(Menu::Credits),
-        music(credits_music.music.clone()),
-    ));
-}
+// fn start_credits_music(mut commands: Commands, credits_music: Res<CreditsAssets>) {
+//     commands.spawn((
+//         Name::new("Credits Music"),
+//         DespawnOnExit(Menu::Credits),
+//         music(credits_music.music.clone()),
+//     ));
+// }

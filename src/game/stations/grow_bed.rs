@@ -1,18 +1,30 @@
+#![allow(unused)]
+#![allow(dead_code)]
 use bevy::prelude::*;
 
-use crate::{game::{data::{IngredientAssets, IngredientKind, ingredients}, interaction::Interacted, items::ItemPlaced}, game_manager::{GamePhase, NightTickEvent}};
+use crate::{
+    game::{
+        data::{IngredientAssets, IngredientKind, ingredients},
+        interaction::Interacted,
+        items::ItemPlaced,
+    },
+    game_manager::{GamePhase, NightTickEvent},
+};
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(Update, (
-        GrowBed::on_plant_tick.run_if(in_state(GamePhase::Night)),
-        update_bouncing_items,
-    ));
+    app.add_systems(
+        Update,
+        (
+            GrowBed::on_plant_tick.run_if(in_state(GamePhase::Night)),
+            update_bouncing_items,
+        ),
+    );
     app.add_observer(observe_grow_bed_interact);
     app.add_observer(observe_grow_bed_interact_seed);
 }
 
 #[derive(Component, Debug, Clone)]
-pub struct Seed{
+pub struct Seed {
     pub kind: IngredientKind,
     pub grow_time: f32,
 }
@@ -37,37 +49,33 @@ impl GrowBed {
             is_broken: false,
             is_locked: false,
             active_seed: None,
-            remaining_grow_time: 10.0
+            remaining_grow_time: 10.0,
         };
 
         // USED SOLELY FOR DEBUGGING PURPOSES
         // TODO: REMOVE THIS
         let mut new_seed = None;
         if rand::random::<bool>() {
-           new_seed = Some(
-                Seed {
-                    kind: IngredientKind::Fireweed,
-                    grow_time: 10.0
-                }
-            );
-            
+            new_seed = Some(Seed {
+                kind: IngredientKind::Fireweed,
+                grow_time: 10.0,
+            });
         }
         new_grow_bed.set_seed(new_seed);
         return new_grow_bed;
     }
 
-    pub fn set_seed(&mut self, new_seed: Option<Seed>){
+    pub fn set_seed(&mut self, new_seed: Option<Seed>) {
         self.active_seed = new_seed;
-        
+
         if let Some(_) = self.active_seed.as_ref() {
             self.start_growth();
-        }
-        else{
+        } else {
             self.growth_stage = 0;
         }
     }
 
-    pub fn start_growth(&mut self){
+    pub fn start_growth(&mut self) {
         if let Some(seed) = self.active_seed.as_ref() {
             self.is_planted = true;
             self.remaining_grow_time = seed.grow_time;
@@ -78,7 +86,7 @@ impl GrowBed {
     pub fn on_plant_tick(
         mut grow_beds: Query<&mut Self>,
         mut messages: MessageReader<NightTickEvent>,
-    ){
+    ) {
         for event in messages.read() {
             for mut grow_bed in grow_beds.iter_mut() {
                 // Call the self-contained method directly on each instance
@@ -95,38 +103,38 @@ impl GrowBed {
                 // Maps 1.0 -> 1, 0.0 -> 6, and every 20% interval in between
                 self.growth_stage = ((1.0 - ratio) / 0.25).floor() as u8 + 1;
             }
-            
+
             if self.remaining_grow_time <= 0.0 {
                 self.complete_grow();
             }
         }
     }
 
-    pub fn complete_grow(&mut self){
+    pub fn complete_grow(&mut self) {
         self.growth_stage = 6;
         self.is_harvestable = true;
-        println!("Harvestable!!!!!");
+        //println!("Harvestable!!!!!");
     }
 
     /// If the grow bed is harvestable, launches the ingredient lightly away from
     /// the harvesting entity and resets the grow timer to start a new growth cycle.
     pub fn harvest_crop(
-        &mut self, 
+        &mut self,
         commands: &mut Commands,
         bed_transform: Option<&Transform>,
         player_transform: Option<&Transform>,
         assets: Option<Res<IngredientAssets>>,
-    ){
+    ) {
         if self.is_planted && self.is_harvestable && self.remaining_grow_time <= 0.0 {
             // Calculate the drop direction (defaults to upward/forward if transforms missing)
             let mut drop_direction = Vec3::Y; // Default upward bounce
             let spawn_position = bed_transform.map(|t| t.translation).unwrap_or(Vec3::ZERO);
-            
+
             if let (Some(bed), Some(player)) = (bed_transform, player_transform) {
                 // Vector pointing from player to grow bed
                 let mut flat_direction = bed.translation - player.translation;
                 flat_direction.y = 0.0; // Keep it on the ground plane
-                
+
                 if flat_direction != Vec3::ZERO {
                     // Normalize and add a small upward arc lift
                     drop_direction = flat_direction.normalize() + Vec3::Y * 0.5;
@@ -135,8 +143,10 @@ impl GrowBed {
             let initial_velocity = drop_direction.normalize() * 5.0;
 
             // Extract the ingredient kind before resetting/clearing
-            if let Some(seed) = self.active_seed.as_ref() && let Some(assets) = assets.as_ref() {
-                let ingredient_kind = seed.kind; 
+            if let Some(seed) = self.active_seed.as_ref()
+                && let Some(assets) = assets.as_ref()
+            {
+                let ingredient_kind = seed.kind;
 
                 // --- SPAWN INGREDIENT ENTITY HERE ---
                 let mut ingredient = commands.spawn_scene(ingredients(ingredient_kind, assets));
@@ -145,8 +155,8 @@ impl GrowBed {
                     ingredient_kind,
                     BouncingIngredient {
                         velocity: initial_velocity,
-                        gravity: 9.8,       // Pulls the item down over time
-                        friction: 4.0,      // Dwindles horizontal movement quickly
+                        gravity: 9.8,  // Pulls the item down over time
+                        friction: 4.0, // Dwindles horizontal movement quickly
                     },
                 ));
             }
@@ -157,12 +167,11 @@ impl GrowBed {
                 self.remaining_grow_time = seed.grow_time;
             }
 
-            
-            println!("Harvest Complete!");
+            // println!("Harvest Complete!");
         }
     }
 
-    pub fn end_growth(&mut self){
+    pub fn end_growth(&mut self) {
         self.is_planted = false;
         self.remaining_grow_time = 0.0;
         self.growth_stage = 0;
@@ -177,7 +186,7 @@ pub fn observe_grow_bed_interact(
     mut grow_bed_query: Query<&mut GrowBed>,
     transform_query: Query<&Transform>,
     assets: Option<Res<IngredientAssets>>,
-){
+) {
     if let Ok(mut grow_bed) = grow_bed_query.get_mut(event.entity) {
         if grow_bed.is_harvestable {
             let bed_transform = transform_query.get(event.entity).ok();
@@ -193,8 +202,8 @@ pub fn observe_grow_bed_interact_seed(
     mut grow_bed_query: Query<&mut GrowBed>,
     seed_query: Query<&Seed>,
     game_phase: ResMut<State<GamePhase>>,
-){  
-    if let Ok(seed) = seed_query.get(event.item){
+) {
+    if let Ok(seed) = seed_query.get(event.item) {
         if let Ok(mut grow_bed) = grow_bed_query.get_mut(event.entity) {
             if !grow_bed.is_planted && *game_phase == GamePhase::Day {
                 grow_bed.set_seed(Some(seed.clone()));
@@ -231,7 +240,7 @@ pub fn update_bouncing_items(
         // If your beds sit on a different height, change 0.0 to your local floor level
         if transform.translation.y <= 0.0 {
             transform.translation.y = 0.0;
-            
+
             // If it still has vertical downward energy, give it a tiny micro-bounce
             if bounce.velocity.y < -1.0 {
                 bounce.velocity.y = -bounce.velocity.y * 0.4; // Reverse and cut energy in half

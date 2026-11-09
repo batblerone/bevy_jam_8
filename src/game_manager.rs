@@ -1,3 +1,5 @@
+#![allow(unused)]
+#![allow(dead_code)]
 //! Game manager controls the game state, score tracking,
 //! save states and overall progress of the game.
 
@@ -261,12 +263,12 @@ fn test_advance_phase(
     current_phase: Res<State<GamePhase>>,
     mut next_state: ResMut<NextState<GamePhase>>,
 ) {
-    let shift_held =
-        keyboard_input.pressed(KeyCode::ShiftLeft) || keyboard_input.pressed(KeyCode::ShiftRight);
+    // let shift_held =
+    //     keyboard_input.pressed(KeyCode::ShiftLeft) || keyboard_input.pressed(KeyCode::ShiftRight);
 
-    let f1_pressed = keyboard_input.just_pressed(KeyCode::F1);
+    let f1_pressed = keyboard_input.just_pressed(KeyCode::KeyT);
 
-    if shift_held && f1_pressed {
+    if f1_pressed {
         // Determine the next state based on the current state
         let target_phase = match current_phase.get() {
             GamePhase::Initial => Some(GamePhase::Day),

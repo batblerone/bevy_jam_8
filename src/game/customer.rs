@@ -1,3 +1,5 @@
+#![allow(unused)]
+#![allow(dead_code)]
 //! The customer module for spawning customers and managing behavour
 //!
 //! Will spawn customers with same scene methodology as player.rs

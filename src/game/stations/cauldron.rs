@@ -1,3 +1,5 @@
+#![allow(unused)]
+#![allow(dead_code)]
 use bevy::prelude::*;
 
 use crate::game::data::{AlchemyDatabase, Ingredient, IngredientKind, Potion};

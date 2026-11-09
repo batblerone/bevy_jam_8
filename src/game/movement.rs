@@ -90,6 +90,7 @@ impl MovementIntent {
     }
 
     // Only have left and right sprite sheet
+    #[allow(dead_code)]
     pub fn facing(&self) -> Facing {
         let f = self.facing;
         if f.x > 0.0 {

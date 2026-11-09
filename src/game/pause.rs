@@ -18,6 +18,7 @@ pub(super) fn plugin(app: &mut App) {
         .add_systems(OnExit(Pause(true)), resume_physics);
 }
 
+#[allow(dead_code)]
 pub trait PausableInputExt {
     /// Kind of like `add_input_context` but for pausing
     fn add_pausable_input_context<C: Component>(&mut self) -> &mut Self;
@@ -55,7 +56,8 @@ fn resume_context<C: Component>(
     contexts: Query<Entity, With<PausedContext<C>>>,
 ) {
     for entity in &contexts {
-        commands.entity(entity)
+        commands
+            .entity(entity)
             .insert(ContextActivity::<C>::INACTIVE) // incase things need a reset
             .insert(ContextActivity::<C>::ACTIVE)
             .remove::<PausedContext<C>>();

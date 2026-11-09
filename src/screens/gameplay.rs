@@ -11,7 +11,7 @@ use crate::{
         player::*,
         score::{EnemyDefeated, PointValue},
     },
-    game_manager::{GamePhase, Menu, PausableSystems, Pause, PlayerDied, RunSetup},
+    game_manager::{GamePhase, Menu, Pause, PlayerDied, RunSetup},
     menus::navigation::{TogglePause, action_just_started},
     screens::Screen,
 };

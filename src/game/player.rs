@@ -14,6 +14,7 @@ use bevy::{
     sprite_render::AlphaMode2d,
 };
 
+#[allow(unused)]
 use crate::{
     AppSystems, PausableSystems,
     asset_tracking::LoadResource,
@@ -47,6 +48,7 @@ pub struct Player;
 #[reflect(Component)]
 pub struct Invincible(pub Timer);
 
+#[allow(dead_code)]
 pub fn grant_invincibility(mut commands: Commands, new_crows: Query<Entity, Added<Player>>) {
     for crow in &new_crows {
         commands.entity(crow).insert(Invincible(Timer::from_seconds(
@@ -56,6 +58,7 @@ pub fn grant_invincibility(mut commands: Commands, new_crows: Query<Entity, Adde
     }
 }
 
+#[allow(dead_code)]
 pub fn tick_invincibility(
     mut commands: Commands,
     time: Res<Time>,
